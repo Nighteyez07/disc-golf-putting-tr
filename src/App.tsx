@@ -135,8 +135,14 @@ function App() {
 
     if (session.currentPositionNumber < 9) {
       const carryover = calculateCarryover(completedPosition)
-      const nextPosition = createInitialPosition(session.currentPositionNumber + 1, carryover)
-      updatedPositions[session.currentPositionNumber] = nextPosition
+      const nextPositionIndex = session.currentPositionNumber
+      const nextPosition = updatedPositions[nextPositionIndex]
+      
+      updatedPositions[nextPositionIndex] = {
+        ...nextPosition,
+        attemptsCarriedOver: carryover,
+        totalAttemptsAvailable: nextPosition.baseAttemptsAllocated + carryover,
+      }
 
       setTimeout(() => {
         setSession(prev => ({

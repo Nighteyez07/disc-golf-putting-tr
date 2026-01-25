@@ -17,8 +17,9 @@ export function PositionTriangle({
     const rows = [
       [1],
       [2, 3],
-      [4, 5, 6],
-      [7, 8, 9],
+      [4, 5],
+      [6, 7],
+      [8, 9],
     ]
     
     let row = 0
@@ -42,6 +43,7 @@ export function PositionTriangle({
     const isComplete = position.completed
     const isSuccess = position.status === "success"
     const isPenalty = position.status === "continued-penalty"
+    const isBasket = position.positionNumber === 1
     
     return (
       <button
@@ -65,7 +67,7 @@ export function PositionTriangle({
         {isComplete && isSuccess && (
           <CheckCircle className="absolute inset-0 w-full h-full p-2" weight="fill" />
         )}
-        {(!isComplete || !isSuccess) && position.positionNumber}
+        {(!isComplete || !isSuccess) && (isBasket ? "B" : position.positionNumber)}
       </button>
     )
   }
@@ -75,8 +77,8 @@ export function PositionTriangle({
       <div 
         className="grid gap-6 place-items-center"
         style={{
-          gridTemplateColumns: "repeat(3, 56px)",
-          gridTemplateRows: "repeat(4, 56px)",
+          gridTemplateColumns: "repeat(2, 56px)",
+          gridTemplateRows: "repeat(5, 56px)",
         }}
       >
         {positions.map((pos) => renderPosition(pos))}
