@@ -5,13 +5,14 @@ import { formatScore, formatDuration } from "@/lib/game-logic"
 import { ArrowLeft, Trophy } from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
 import { getSessionHistory } from "@/lib/storage"
+import { Session } from "@/lib/types"
 
 interface SessionHistoryProps {
   onBack: () => void
 }
 
 export function SessionHistory({ onBack }: SessionHistoryProps) {
-  const [sessions, setSessions] = useState<any[]>([])
+  const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

@@ -6,7 +6,6 @@ import {
   calculatePositionScore,
   calculateSessionScore,
   createSessionSummary,
-  createInitialPosition,
 } from "./lib/game-logic"
 import { 
   saveCurrentSession, 
