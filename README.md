@@ -1,23 +1,110 @@
-# ✨ Welcome to Your Spark Template!
-You've just launched your brand-new Spark Template Codespace — everything’s fired up and ready for you to explore, build, and create with Spark!
+# Disc Golf Putting Trainer
 
-This template is your blank canvas. It comes with a minimal setup to help you get started quickly with Spark development.
+A mobile-optimized web app for structured disc golf putting practice. Track your progress across 9 positions with increasing difficulty, featuring an innovative attempt carryover system and optional penalty scoring mode.
 
-🚀 What's Inside?
-- A clean, minimal Spark environment
-- Pre-configured for local development
-- Ready to scale with your ideas
-  
-🧠 What Can You Do?
+## Features
 
-Right now, this is just a starting point — the perfect place to begin building and testing your Spark applications.
+**Position-Based Training** - Practice from 9 positions arranged in a triangle, each requiring 3 successful putts within progressively increasing attempt allocations (3-11 attempts per position).
 
-🧹 Just Exploring?
-No problem! If you were just checking things out and don’t need to keep this code:
+**Attempt Carryover System** - Unused attempts from completed positions automatically carry over to the next position, rewarding efficient putting and building momentum.
 
-- Simply delete your Spark.
-- Everything will be cleaned up — no traces left behind.
+**Penalty Scoring Mode** - Choice to continue after exhausting attempts with -1 point per additional putt, allowing session persistence with competitive scoring pressure.
 
-📄 License For Spark Template Resources 
+**Session Persistence** - Auto-saves every 10 seconds to localStorage; completed sessions archive to IndexedDB with full scoring breakdown and history viewing.
 
-The Spark Template files and resources from GitHub are licensed under the terms of the MIT license, Copyright GitHub, Inc.
+**Real-Time Tracking** - Live header display showing current position, cumulative score, and attempt breakdown updated with every putt.
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+
+### Development Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server (runs on http://localhost:5000)
+npm run dev
+
+# Build for production
+npm run build
+
+# Lint code
+npm run lint
+
+# Optimize dependencies
+npm run optimize
+```
+
+### Project Structure
+
+```
+src/
+├── App.tsx                 # Main session orchestration and view management
+├── components/             # React UI components
+│   ├── GameControls.tsx   # Sink/Miss putt buttons
+│   ├── GameHeader.tsx     # Position, score, timer display
+│   ├── PositionTriangle.tsx # 3x3 grid position visualization
+│   ├── SessionComplete.tsx # End-of-session summary
+│   ├── SessionHistory.tsx # Past sessions browser
+│   └── ui/                # Radix UI + shadcn/ui primitives
+├── lib/
+│   ├── types.ts           # Core data structures (Session, Position, Putt)
+│   ├── game-logic.ts      # Pure game rule calculations
+│   ├── storage.ts         # IndexedDB and localStorage operations
+│   └── seed-data.ts       # Demo session data
+└── styles/                # Tailwind CSS theme
+```
+
+## Architecture
+
+### Core Game Model
+
+The app manages sessions through a hierarchical state model:
+- **Session** - Container for a single training session with 9 positions and metadata
+- **Position** - Individual training location with base attempts, putts, and status
+- **Putt** - Single attempt ("sink" or "miss") with timestamp
+
+### Scoring System
+
+- **Success**: 3 points per completed position (all putts sunk within attempts)
+- **Carryover**: Unused attempts automatically add to next position's allocation
+- **Penalty Mode**: Each attempt exceeding available attempts = -1 point
+- **Final Score**: Sum of all position scores including penalties
+
+### Storage Strategy
+
+- **Current Session**: Stored in `localStorage` under `currentSession` key
+- **Completed Sessions**: Archived to IndexedDB `completed_sessions` store
+- **Auto-save**: Debounced save every game state change
+- **Seeding**: Demo data available via `seed-data.ts`
+
+## Development Tips
+
+**State Management**: App component uses React hooks with controlled state pattern. After each putt, manually calculate new position status, update position array, then call `setSession()` with new object reference.
+
+**Game Logic Testing**: All calculations in `game-logic.ts` are pure functions with no side effects - test in isolation from UI.
+
+**Storage Debugging**: Use browser DevTools Storage tab to inspect IndexedDB and localStorage. Check React DevTools for session state in hooks.
+
+**UI Components**: All Radix UI components are pre-built in `src/components/ui/`. Import using shadcn/ui pattern: `import { Button } from "@/components/ui/button"`
+
+**Game Rules**: Modify `BASE_ATTEMPTS` in `types.ts` to adjust position difficulties. Update scoring logic in `game-logic.ts` for rule changes.
+
+## Technology Stack
+
+- **React 18** + TypeScript for type-safe component development
+- **Vite** + @github/spark for fast build and development
+- **Radix UI** + Tailwind CSS + shadcn/ui for accessible, styled components
+- **Framer Motion** for smooth animations
+- **Sonner** for toast notifications
+- **IndexedDB** for persistent session history
+
+## License
+
+MIT License - Copyright GitHub, Inc.
+
+This project was scaffolded with the GitHub Spark template. See LICENSE file for full details.
