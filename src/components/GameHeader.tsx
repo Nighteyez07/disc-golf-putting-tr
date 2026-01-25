@@ -20,6 +20,11 @@ export function GameHeader({
   penaltyMode,
   onRestart,
 }: GameHeaderProps) {
+  // Add null-safety check to prevent error when position is undefined during state transitions
+  if (!position) {
+    return null
+  }
+
   const attemptsText = position.attemptsCarriedOver > 0
     ? `${position.totalAttemptsAvailable} shots (${position.baseAttemptsAllocated} + ${position.attemptsCarriedOver} carry)`
     : `${position.totalAttemptsAvailable} shots`
