@@ -1,4 +1,4 @@
-import { Session, SessionSummary } from "./types"
+import { Session } from "./types"
 
 const CURRENT_SESSION_KEY = "current_session"
 const DB_NAME = "DiscPuttingGameDB"
@@ -86,7 +86,7 @@ export async function archiveSession(session: Session): Promise<void> {
   }
 }
 
-export async function getSessionHistory(): Promise<any[]> {
+export async function getSessionHistory(): Promise<Session[]> {
   try {
     const db = await initDB()
     const transaction = db.transaction([STORE_NAME], "readonly")
@@ -95,7 +95,7 @@ export async function getSessionHistory(): Promise<any[]> {
     
     return new Promise((resolve, reject) => {
       const request = index.openCursor(null, "prev")
-      const results: any[] = []
+      const results: Session[] = []
       
       request.onsuccess = (event) => {
         const cursor = (event.target as IDBRequest).result
