@@ -13,37 +13,11 @@ export function PositionTriangle({
   currentPosition,
   onSelectPosition 
 }: PositionTriangleProps) {
-  const getPositionStyle = (positionNumber: number) => {
-    const rows = [
-      [1],
-      [2, 3],
-      [4, 5],
-      [6, 7],
-      [8, 9],
-    ]
-    
-    let row = 0
-    let col = 0
-    
-    for (let r = 0; r < rows.length; r++) {
-      const idx = rows[r].indexOf(positionNumber)
-      if (idx !== -1) {
-        row = r
-        col = idx
-        break
-      }
-    }
-    
-    return { row, col, rowSize: rows[row].length }
-  }
-
   const renderPosition = (position: Position) => {
-    const { row, col, rowSize } = getPositionStyle(position.positionNumber)
     const isCurrent = position.positionNumber === currentPosition
     const isComplete = position.completed
     const isSuccess = position.status === "success"
     const isPenalty = position.status === "continued-penalty"
-    const isBasket = position.positionNumber === 1
     
     return (
       <button
@@ -59,29 +33,45 @@ export function PositionTriangle({
           isComplete && isPenalty && "bg-warning text-warning-foreground",
           !isCurrent && !isComplete && "bg-secondary text-secondary-foreground border-2 border-border",
         )}
-        style={{
-          gridRow: row + 1,
-          gridColumn: col + 1,
-        }}
       >
         {isComplete && isSuccess && (
           <CheckCircle className="absolute inset-0 w-full h-full p-2" weight="fill" />
         )}
-        {(!isComplete || !isSuccess) && (isBasket ? "B" : position.positionNumber)}
+        {(!isComplete || !isSuccess) && position.positionNumber}
       </button>
     )
   }
 
   return (
-    <div className="flex items-center justify-center py-8">
-      <div 
-        className="grid gap-6 place-items-center"
-        style={{
-          gridTemplateColumns: "repeat(2, 56px)",
-          gridTemplateRows: "repeat(5, 56px)",
-        }}
-      >
-        {positions.map((pos) => renderPosition(pos))}
+    <div className="flex items-center justify-center py-8 px-4">
+      <div className="flex flex-col items-center gap-6">
+        <div className="flex justify-center gap-6">
+          <div className="text-sm text-muted-foreground font-semibold">B</div>
+        </div>
+        
+        <div className="flex justify-center gap-6">
+          {renderPosition(positions[0])}
+        </div>
+        
+        <div className="flex justify-center gap-12">
+          {renderPosition(positions[1])}
+          {renderPosition(positions[2])}
+        </div>
+        
+        <div className="flex justify-center gap-20">
+          {renderPosition(positions[3])}
+          {renderPosition(positions[4])}
+        </div>
+        
+        <div className="flex justify-center gap-28">
+          {renderPosition(positions[5])}
+          {renderPosition(positions[6])}
+        </div>
+        
+        <div className="flex justify-center gap-36">
+          {renderPosition(positions[7])}
+          {renderPosition(positions[8])}
+        </div>
       </div>
     </div>
   )

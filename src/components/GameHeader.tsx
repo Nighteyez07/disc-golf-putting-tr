@@ -1,5 +1,7 @@
 import { Position } from "@/lib/types"
 import { formatScore } from "@/lib/game-logic"
+import { Button } from "@/components/ui/button"
+import { ArrowCounterClockwise } from "@phosphor-icons/react"
 
 interface GameHeaderProps {
   currentPosition: number
@@ -7,6 +9,7 @@ interface GameHeaderProps {
   cumulativeScore: number
   position: Position
   penaltyMode: boolean
+  onRestart: () => void
 }
 
 export function GameHeader({
@@ -15,6 +18,7 @@ export function GameHeader({
   cumulativeScore,
   position,
   penaltyMode,
+  onRestart,
 }: GameHeaderProps) {
   const attemptsText = position.attemptsCarriedOver > 0
     ? `${position.totalAttemptsAvailable} shots (${position.baseAttemptsAllocated} + ${position.attemptsCarriedOver} carry)`
@@ -26,8 +30,18 @@ export function GameHeader({
         <h1 className="text-2xl">
           Position {currentPosition} of {totalPositions}
         </h1>
-        <div className="numeric text-primary">
-          {formatScore(cumulativeScore)}
+        <div className="flex items-center gap-4">
+          <div className="numeric text-primary">
+            {formatScore(cumulativeScore)}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onRestart}
+            className="h-9 w-9"
+          >
+            <ArrowCounterClockwise className="h-5 w-5" />
+          </Button>
         </div>
       </div>
       <div className="text-base text-muted-foreground">

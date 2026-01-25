@@ -30,6 +30,7 @@ type AppView = "game" | "complete" | "history"
 function App() {
   const [session, setSession] = useState<Session>(createNewSession())
   const [showRestartDialog, setShowRestartDialog] = useState(false)
+  const [showManualRestartDialog, setShowManualRestartDialog] = useState(false)
   const [currentView, setCurrentView] = useState<AppView>("game")
   const [processingPutt, setProcessingPutt] = useState(false)
 
@@ -118,17 +119,18 @@ function App() {
     allPositions: Position[],
     status: "success" | "continued-penalty"
   ) => {
-    const posScore = calculatePositionScore(
-      { ...position, status, completed: true },
-      session.penaltyMode || status === "continued-penalty"
-    )
-
     const completedPosition: Position = {
       ...position,
       status,
       completed: true,
-      positionScore: posScore,
     }
+    
+    const posScore = calculatePositionScore(
+      completedPosition,
+      session.penaltyMode || status === "continued-penalty"
+    )
+    
+    completedPosition.positionScore = posScore
 
     const updatedPositions = [...allPositions]
     updatedPositions[session.currentPositionNumber - 1] = completedPosition
@@ -222,6 +224,22 @@ function App() {
     setCurrentView("game")
   }, [])
 
+  const handleManualRestart = useCallback(() => {
+    setShowManualRestartDialog(true)
+  }, [])
+
+  const handleConfirmManualRestart = useCallback(() => {
+    setShowManualRestartDialog(false)
+    const newSession = createNewSession()
+    setSession(newSession)
+    saveCurrentSession(newSession)
+    toast.info("Game restarted", { duration: 1500 })
+  }, [])
+
+  const handleCancelManualRestart = useCallback(() => {
+    setShowManualRestartDialog(false)
+  }, [])
+
   if (currentView === "history") {
     return (
       <>
@@ -256,6 +274,7 @@ function App() {
           cumulativeScore={cumulativeScore}
           position={currentPosition}
           penaltyMode={session.penaltyMode}
+          onRestart={handleManualRestart}
         />
 
         <div className="flex-1 overflow-auto">
@@ -288,6 +307,15 @@ function App() {
         open={showRestartDialog}
         onRestart={handleRestart}
         onContinue={handleContinueWithPenalty}
+      />
+
+      <RestartDialog
+        open={showManualRestartDialog}
+        onRestart={handleConfirmManualRestart}
+        onContinue={handleCancelManualRestart}
+        title="Restart Game?"
+        description="Are you sure you want to restart? Your current progress will be lost."
+        continueText="Cancel"
       />
 
       <Toaster position="top-center" />
