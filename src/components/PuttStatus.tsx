@@ -8,6 +8,11 @@ interface PuttStatusProps {
 }
 
 export function PuttStatus({ position, penaltyMode }: PuttStatusProps) {
+  // Add null-safety check to prevent error when position is undefined during state transitions
+  if (!position) {
+    return null
+  }
+
   const remaining = position.totalAttemptsAvailable - position.attemptsUsed
   const isOverage = position.attemptsUsed > position.totalAttemptsAvailable
   
