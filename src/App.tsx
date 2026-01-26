@@ -21,10 +21,13 @@ import { GameControls } from "./components/GameControls"
 import { RestartDialog } from "./components/RestartDialog"
 import { SessionComplete } from "./components/SessionComplete"
 import { SessionHistory } from "./components/SessionHistory"
+import { InstructionsDialog } from "./components/InstructionsDialog"
 import { Toaster, toast } from "sonner"
 import { motion } from "framer-motion"
 
 type AppView = "game" | "complete" | "history"
+
+const INSTRUCTIONS_SEEN_KEY = "instructions_seen"
 
 function App() {
   const [session, setSession] = useState<Session>(createNewSession())
@@ -32,6 +35,7 @@ function App() {
   const [showManualRestartDialog, setShowManualRestartDialog] = useState(false)
   const [currentView, setCurrentView] = useState<AppView>("game")
   const [processingPutt, setProcessingPutt] = useState(false)
+  const [showInstructions, setShowInstructions] = useState(false)
 
   useEffect(() => {
     async function initialize() {
@@ -47,6 +51,12 @@ function App() {
       const savedSession = loadCurrentSession()
       if (savedSession && !savedSession.endTime) {
         setSession(savedSession)
+      }
+
+      // Check if user has seen instructions before
+      const hasSeenInstructions = localStorage.getItem(INSTRUCTIONS_SEEN_KEY)
+      if (!hasSeenInstructions) {
+        setShowInstructions(true)
       }
     }
     
@@ -239,6 +249,15 @@ function App() {
     setShowManualRestartDialog(false)
   }, [])
 
+  const handleShowInstructions = useCallback(() => {
+    setShowInstructions(true)
+  }, [])
+
+  const handleCloseInstructions = useCallback(() => {
+    localStorage.setItem(INSTRUCTIONS_SEEN_KEY, "true")
+    setShowInstructions(false)
+  }, [])
+
   if (currentView === "history") {
     return (
       <>
@@ -274,6 +293,7 @@ function App() {
           position={currentPosition}
           penaltyMode={session.penaltyMode}
           onRestart={handleManualRestart}
+          onShowInstructions={handleShowInstructions}
         />
 
         <div className="flex-1 overflow-auto">
@@ -315,6 +335,11 @@ function App() {
         title="Restart Game?"
         description="Are you sure you want to restart? Your current progress will be lost."
         continueText="Cancel"
+      />
+
+      <InstructionsDialog
+        open={showInstructions}
+        onClose={handleCloseInstructions}
       />
 
       <Toaster position="top-center" />

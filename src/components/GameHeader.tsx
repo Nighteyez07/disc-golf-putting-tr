@@ -1,7 +1,7 @@
 import { Position } from "@/lib/types"
 import { formatScore } from "@/lib/game-logic"
 import { Button } from "@/components/ui/button"
-import { ArrowCounterClockwise } from "@phosphor-icons/react"
+import { ArrowCounterClockwise, Book } from "@phosphor-icons/react"
 
 interface GameHeaderProps {
   currentPosition: number
@@ -10,6 +10,7 @@ interface GameHeaderProps {
   position: Position
   penaltyMode: boolean
   onRestart: () => void
+  onShowInstructions?: () => void
 }
 
 export function GameHeader({
@@ -19,6 +20,7 @@ export function GameHeader({
   position,
   penaltyMode,
   onRestart,
+  onShowInstructions,
 }: GameHeaderProps) {
   // Add null-safety check to prevent error when position is undefined during state transitions
   if (!position) {
@@ -39,6 +41,17 @@ export function GameHeader({
           <div className="numeric text-primary">
             {formatScore(cumulativeScore)}
           </div>
+          {onShowInstructions && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onShowInstructions}
+              className="h-9 w-9"
+              aria-label="View instructions"
+            >
+              <Book className="h-5 w-5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
