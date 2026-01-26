@@ -428,6 +428,7 @@ function App() {
             onRecordSink={() => recordPutt("sink")}
             onRecordMiss={() => recordPutt("miss")}
             disabled={processingPutt}
+            sessionComplete={session.endTime !== null}
           />
         </div>
       </div>
