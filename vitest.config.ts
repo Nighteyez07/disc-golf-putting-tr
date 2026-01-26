@@ -10,6 +10,11 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     globals: true,
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/tests/e2e/**', // Exclude Playwright E2E tests
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
@@ -20,6 +25,7 @@ export default defineConfig({
         '**/*.config.*',
         '**/mockData',
         'src/components/ui/**', // Exclude shadcn/ui components
+        'tests/e2e/**', // Exclude Playwright E2E tests from coverage
       ],
     },
   },

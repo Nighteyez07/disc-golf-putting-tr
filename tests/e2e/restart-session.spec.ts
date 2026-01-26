@@ -18,8 +18,8 @@ test.describe('Restart Session', () => {
     await page.getByRole('button', { name: /sink/i }).click();
     await page.waitForTimeout(500);
     
-    // Click restart button (ArrowCounterClockwise icon)
-    await page.getByRole('button', { name: /restart/i }).first().click();
+    // Click restart button (using aria-label)
+    await page.getByRole('button', { name: /restart session/i }).click();
     
     // Verify confirmation dialog appears
     const confirmDialog = page.getByRole('alertdialog');
@@ -44,7 +44,7 @@ test.describe('Restart Session', () => {
     await expect(page.getByText(/position 1 of 9/i)).toBeVisible();
     
     // Click restart button
-    await page.getByRole('button', { name: /restart/i }).first().click();
+    await page.getByRole('button', { name: /restart session/i }).click();
     
     // Wait for confirmation dialog
     const confirmDialog = page.getByRole('alertdialog');
@@ -74,7 +74,7 @@ test.describe('Restart Session', () => {
     await expect(page.getByText(/position 2 of 9/i)).toBeVisible();
     
     // Click restart button
-    await page.getByRole('button', { name: /restart/i }).first().click();
+    await page.getByRole('button', { name: /restart session/i }).click();
     
     // Wait for confirmation dialog
     const confirmDialog = page.getByRole('alertdialog');
