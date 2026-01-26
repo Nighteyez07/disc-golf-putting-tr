@@ -28,12 +28,13 @@ export function GameHeader({
     return null
   }
 
-  // Calculate cumulative shots taken across all completed + current positions
+  // Calculate cumulative shots taken (includes current position's shots so far)
+  // slice(0, currentPosition) gives positions 0 to currentPosition-1, which includes the current position
   const totalShotsTaken = session.positions
     .slice(0, currentPosition)
     .reduce((sum, pos) => sum + pos.attemptsUsed, 0)
 
-  // Calculate cumulative attempts available across all completed + current positions
+  // Calculate cumulative attempts available (includes current position's total allocation)
   const totalAttemptsAvailable = session.positions
     .slice(0, currentPosition)
     .reduce((sum, pos) => sum + pos.totalAttemptsAvailable, 0)
