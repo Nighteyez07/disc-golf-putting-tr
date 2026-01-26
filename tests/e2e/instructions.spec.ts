@@ -4,13 +4,12 @@ import { clearAppState, skipInstructions } from './helpers/test-utils';
 test.describe('Instructions Dialog', () => {
   test.beforeEach(async ({ page }) => {
     // Clear state before each test to ensure clean slate
+    // This also navigates to the app
     await clearAppState(page);
   });
 
   test('shows instructions dialog on first visit', async ({ page }) => {
-    // Navigate to the app - should show instructions on first visit
-    await page.goto('/');
-    
+    // clearAppState already navigated to the app
     // Wait for the dialog to appear
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
@@ -21,9 +20,7 @@ test.describe('Instructions Dialog', () => {
   });
 
   test('closes instructions dialog when clicking Let\'s Practice', async ({ page }) => {
-    // Navigate to the app
-    await page.goto('/');
-    
+    // clearAppState already navigated to the app
     // Wait for dialog to appear
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
@@ -42,8 +39,8 @@ test.describe('Instructions Dialog', () => {
   });
 
   test('opens instructions when clicking header book icon', async ({ page }) => {
+    // clearAppState already navigated to the app
     // Set localStorage to skip auto-display
-    await page.goto('/');
     await skipInstructions(page);
     await page.reload();
     

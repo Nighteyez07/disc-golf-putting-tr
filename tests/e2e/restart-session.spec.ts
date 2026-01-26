@@ -3,9 +3,10 @@ import { clearAppState, skipInstructions, recordPutts } from './helpers/test-uti
 
 test.describe('Restart Session', () => {
   test.beforeEach(async ({ page }) => {
-    // Clear state and skip instructions for each test
+    // Clear state and navigate to app (clearAppState does both)
     await clearAppState(page);
-    await page.goto('/');
+    
+    // Skip instructions for these tests
     await skipInstructions(page);
     await page.reload();
     
