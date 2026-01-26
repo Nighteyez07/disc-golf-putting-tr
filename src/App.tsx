@@ -146,7 +146,7 @@ function App() {
     const updatedPositions = [...allPositions]
     updatedPositions[session.currentPositionNumber - 1] = completedPosition
 
-    if (session.currentPositionNumber < 9) {
+    if (completedPosition.positionNumber < 9) {
       const carryover = calculateCarryover(completedPosition)
       const nextPositionIndex = completedPosition.positionNumber  // Use completed position's number instead of session.currentPositionNumber
       const nextPosition = updatedPositions[nextPositionIndex]
