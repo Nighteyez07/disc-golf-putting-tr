@@ -55,10 +55,17 @@ export function SessionComplete({
             </div>
           )}
 
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground">Total Shots Taken</span>
+            <span className="font-semibold numeric">
+              {session.positions.reduce((sum, pos) => sum + pos.attemptsUsed, 0)} / {session.positions.reduce((sum, pos) => sum + pos.baseAttemptsAllocated, 0)}
+            </span>
+          </div>
+
           <Separator />
 
           <div className="text-sm text-muted-foreground">
-            <div className="font-semibold mb-2">Position Scores:</div>
+            <div className="font-semibold mb-2">Position Breakdown:</div>
             <div className="grid grid-cols-3 gap-2">
               {session.positions.map((pos, i) => (
                 <div 
@@ -69,7 +76,7 @@ export function SessionComplete({
                   <div className={`numeric text-sm font-bold ${
                     pos.positionScore < 0 ? 'text-warning' : 'text-foreground'
                   }`}>
-                    {formatScore(pos.positionScore)}
+                    {pos.attemptsUsed}/{pos.totalAttemptsAvailable}
                   </div>
                 </div>
               ))}
