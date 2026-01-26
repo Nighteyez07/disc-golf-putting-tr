@@ -417,7 +417,8 @@ function App() {
           <GameControls
             onRecordSink={() => recordPutt("sink")}
             onRecordMiss={() => recordPutt("miss")}
-            disabled={processingPutt}
+            disabled={processingPutt || session.endTime !== null}
+            sessionComplete={session.endTime !== null}
           />
         </div>
       </div>

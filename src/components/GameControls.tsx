@@ -5,15 +5,22 @@ interface GameControlsProps {
   onRecordSink: () => void
   onRecordMiss: () => void
   disabled?: boolean
+  sessionComplete?: boolean
 }
 
 export function GameControls({ 
   onRecordSink, 
   onRecordMiss, 
-  disabled = false 
+  disabled = false,
+  sessionComplete = false
 }: GameControlsProps) {
   return (
     <div className="bg-card px-5 py-6">
+      {sessionComplete && (
+        <div className="text-center text-sm text-muted-foreground mb-3">
+          Session complete. Close the completion dialog to start a new game.
+        </div>
+      )}
       <div className="flex gap-3">
         <Button
           onClick={onRecordSink}
