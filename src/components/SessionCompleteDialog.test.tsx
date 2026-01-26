@@ -2,13 +2,13 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { SessionCompleteDialog } from './SessionCompleteDialog'
 import { Session } from '@/lib/types'
-import { createNewSession, createInitialPosition } from '@/lib/game-logic'
+import { createNewSession } from '@/lib/game-logic'
 
 function createCompletedSession(): Session {
   const session = createNewSession()
   
   // Mark all positions as completed with success status
-  session.positions = session.positions.map((pos, idx) => ({
+  session.positions = session.positions.map((pos) => ({
     ...pos,
     completed: true,
     status: 'success' as const,
@@ -120,7 +120,7 @@ describe('SessionCompleteDialog', () => {
     it('highlights penalty positions with warning color', () => {
       const session = createPenaltySession()
       
-      const { container } = render(
+      render(
         <SessionCompleteDialog
           open={true}
           session={session}
