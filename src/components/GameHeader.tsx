@@ -1,6 +1,7 @@
 import { Position, Session } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { ArrowCounterClockwise, Book } from "@phosphor-icons/react"
+import { ThemeToggle } from "@/components/ThemeToggle"
 
 interface GameHeaderProps {
   currentPosition: number
@@ -61,6 +62,7 @@ export function GameHeader({
           <div className={`text-xl font-bold numeric ${progressionColor}`}>
             {totalShotsTaken}/{totalAttemptsAvailable}
           </div>
+          <ThemeToggle />
           {onShowInstructions && (
             <Button
               variant="ghost"
