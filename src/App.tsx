@@ -292,6 +292,7 @@ function App() {
           cumulativeScore={cumulativeScore}
           position={currentPosition}
           penaltyMode={session.penaltyMode}
+          session={session}
           onRestart={handleManualRestart}
           onShowInstructions={handleShowInstructions}
         />
