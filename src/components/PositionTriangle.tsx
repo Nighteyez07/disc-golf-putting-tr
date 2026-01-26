@@ -72,22 +72,22 @@ export function PositionTriangle({
           {renderPosition(positions[0])}
         </div>
         
-        <div className="flex justify-center gap-12">
+        <div className="flex justify-center gap-20">
           {renderPosition(positions[1])}
           {renderPosition(positions[2])}
         </div>
         
-        <div className="flex justify-center gap-20">
+        <div className="flex justify-center gap-40">
           {renderPosition(positions[3])}
           {renderPosition(positions[4])}
         </div>
         
-        <div className="flex justify-center gap-28">
+        <div className="flex justify-center gap-60">
           {renderPosition(positions[5])}
           {renderPosition(positions[6])}
         </div>
         
-        <div className="flex justify-center gap-36">
+        <div className="flex justify-center gap-80">
           {renderPosition(positions[7])}
           {renderPosition(positions[8])}
         </div>
