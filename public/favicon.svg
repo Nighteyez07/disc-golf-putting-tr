@@ -1,26 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Background circle -->
-  <circle cx="50" cy="50" r="48" fill="#3b82f6" stroke="#1e40af" stroke-width="3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Outer circle background -->
+  <circle cx="256" cy="256" r="248" fill="#f59e0b" stroke="#d97706" stroke-width="8"/>
   
-  <!-- Disc (flying disc) -->
-  <ellipse cx="50" cy="40" rx="20" ry="4" fill="#ffffff" opacity="0.9"/>
-  <ellipse cx="50" cy="40" rx="16" ry="3" fill="#3b82f6"/>
-  <path d="M 30 40 Q 35 38 40 40" stroke="#ffffff" stroke-width="1.5" fill="none"/>
-  <path d="M 60 40 Q 65 38 70 40" stroke="#ffffff" stroke-width="1.5" fill="none"/>
-  
-  <!-- Basket pole -->
-  <rect x="48" y="50" width="4" height="30" fill="#ffffff"/>
-  
-  <!-- Basket chains -->
-  <line x1="40" y1="60" x2="60" y2="60" stroke="#ffffff" stroke-width="1" opacity="0.7"/>
-  <line x1="42" y1="65" x2="58" y2="65" stroke="#ffffff" stroke-width="1" opacity="0.7"/>
-  <line x1="44" y1="70" x2="56" y2="70" stroke="#ffffff" stroke-width="1" opacity="0.7"/>
-  
-  <!-- Basket cage structure -->
-  <path d="M 40 60 L 40 75 Q 40 78 43 78 L 57 78 Q 60 78 60 75 L 60 60" stroke="#ffffff" stroke-width="2" fill="none"/>
-  <line x1="45" y1="60" x2="45" y2="75" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
-  <line x1="55" y1="60" x2="55" y2="75" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
-  
-  <!-- Ground -->
-  <ellipse cx="50" cy="80" rx="12" ry="2" fill="#1e40af" opacity="0.3"/>
+  <!-- Inner disc golf basket -->
+  <g transform="translate(256, 256)">
+    <!-- Basket pole -->
+    <rect x="-12" y="50" width="24" height="150" fill="#a855f7" rx="4"/>
+    
+    <!-- Basket top -->
+    <ellipse cx="0" cy="50" rx="80" ry="16" fill="#c084fc"/>
+    
+    <!-- Basket chains (vertical lines) -->
+    <line x1="-60" y1="60" x2="-60" y2="170" stroke="#e9d5ff" stroke-width="6" opacity="0.8"/>
+    <line x1="-40" y1="60" x2="-40" y2="170" stroke="#e9d5ff" stroke-width="6" opacity="0.8"/>
+    <line x1="-20" y1="60" x2="-20" y2="170" stroke="#e9d5ff" stroke-width="6" opacity="0.8"/>
+    <line x1="0" y1="60" x2="0" y2="170" stroke="#e9d5ff" stroke-width="6" opacity="0.9"/>
+    <line x1="20" y1="60" x2="20" y2="170" stroke="#e9d5ff" stroke-width="6" opacity="0.8"/>
+    <line x1="40" y1="60" x2="40" y2="170" stroke="#e9d5ff" stroke-width="6" opacity="0.8"/>
+    <line x1="60" y1="60" x2="60" y2="170" stroke="#e9d5ff" stroke-width="6" opacity="0.8"/>
+    
+    <!-- Basket cage (curved lines) -->
+    <path d="M -70 70 Q -75 120 -70 170" stroke="#e9d5ff" stroke-width="5" fill="none" opacity="0.7"/>
+    <path d="M 70 70 Q 75 120 70 170" stroke="#e9d5ff" stroke-width="5" fill="none" opacity="0.7"/>
+    
+    <!-- Basket bottom ring -->
+    <ellipse cx="0" cy="170" rx="75" ry="14" fill="#c084fc"/>
+    
+    <!-- Flying disc at top -->
+    <g transform="translate(0, -100)">
+      <ellipse cx="0" cy="0" rx="50" ry="10" fill="#ef4444"/>
+      <ellipse cx="0" cy="0" rx="40" ry="8" fill="#dc2626"/>
+      <ellipse cx="0" cy="0" rx="20" ry="4" fill="#991b1b"/>
+      
+      <!-- Disc curves -->
+      <path d="M -40 0 Q -30 -3 -20 0" stroke="#fca5a5" stroke-width="2" fill="none"/>
+      <path d="M 20 0 Q 30 -3 40 0" stroke="#fca5a5" stroke-width="2" fill="none"/>
+    </g>
+  </g>
 </svg>
