@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { CheckCircle, XCircle } from "@phosphor-icons/react"
+import { CheckCircle, XCircle, CircleNotch } from "@phosphor-icons/react"
 
 interface GameControlsProps {
   onRecordSink: () => void
@@ -18,19 +18,37 @@ export function GameControls({
         <Button
           onClick={onRecordSink}
           disabled={disabled}
-          className="flex-1 h-14 text-lg font-semibold bg-accent hover:bg-accent/90 text-accent-foreground"
+          className="flex-1 h-14 text-lg font-semibold bg-accent hover:bg-accent/90 text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <CheckCircle className="mr-2" size={24} weight="fill" />
-          Sink
+          {disabled ? (
+            <>
+              <CircleNotch className="mr-2 animate-spin" size={24} weight="bold" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <CheckCircle className="mr-2" size={24} weight="fill" />
+              Sink
+            </>
+          )}
         </Button>
         <Button
           onClick={onRecordMiss}
           disabled={disabled}
           variant="outline"
-          className="flex-1 h-14 text-lg font-semibold border-2"
+          className="flex-1 h-14 text-lg font-semibold border-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <XCircle className="mr-2" size={24} weight="fill" />
-          Miss
+          {disabled ? (
+            <>
+              <CircleNotch className="mr-2 animate-spin" size={24} weight="bold" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <XCircle className="mr-2" size={24} weight="fill" />
+              Miss
+            </>
+          )}
         </Button>
       </div>
     </div>
