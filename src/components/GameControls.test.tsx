@@ -62,11 +62,11 @@ describe('GameControls', () => {
         />
       )
 
-      const sinkButton = screen.getByRole('button', { name: /sink/i })
-      const missButton = screen.getByRole('button', { name: /miss/i })
+      const buttons = screen.getAllByRole('button', { name: /processing/i })
       
-      expect(sinkButton).toBeDisabled()
-      expect(missButton).toBeDisabled()
+      expect(buttons).toHaveLength(2)
+      expect(buttons[0]).toBeDisabled()
+      expect(buttons[1]).toBeDisabled()
     })
 
     it('enables both buttons when disabled prop is false', () => {
@@ -98,11 +98,10 @@ describe('GameControls', () => {
         />
       )
 
-      const sinkButton = screen.getByRole('button', { name: /sink/i })
-      const missButton = screen.getByRole('button', { name: /miss/i })
+      const buttons = screen.getAllByRole('button', { name: /processing/i })
       
-      await user.click(sinkButton)
-      await user.click(missButton)
+      await user.click(buttons[0])
+      await user.click(buttons[1])
       
       expect(onRecordSink).not.toHaveBeenCalled()
       expect(onRecordMiss).not.toHaveBeenCalled()
@@ -145,11 +144,11 @@ describe('GameControls', () => {
         />
       )
 
-      const sinkButton = screen.getByRole('button', { name: /sink/i })
-      const missButton = screen.getByRole('button', { name: /miss/i })
+      const buttons = screen.getAllByRole('button', { name: /processing/i })
       
-      expect(sinkButton).toBeDisabled()
-      expect(missButton).toBeDisabled()
+      expect(buttons).toHaveLength(2)
+      expect(buttons[0]).toBeDisabled()
+      expect(buttons[1]).toBeDisabled()
     })
   })
 })

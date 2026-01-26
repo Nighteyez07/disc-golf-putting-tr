@@ -27,7 +27,7 @@ export function GameControls({
       <div className="flex gap-3">
         <Button
           onClick={onRecordSink}
-          disabled={disabled}
+          disabled={isDisabled}
           className="flex-1 h-14 text-lg font-semibold bg-accent hover:bg-accent/90 text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {disabled ? (
