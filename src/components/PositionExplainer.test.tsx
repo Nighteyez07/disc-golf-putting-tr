@@ -7,10 +7,13 @@ describe('PositionExplainer', () => {
     it('renders the X/Y format correctly', () => {
       render(<PositionExplainer putts={3} carryover={1} />)
       
-      expect(screen.getByText('3/1')).toBeInTheDocument()
+      // Text is split across multiple spans, so we check for individual parts
+      expect(screen.getByText('3')).toBeInTheDocument()
+      expect(screen.getByText('/')).toBeInTheDocument()
+      expect(screen.getByText('1')).toBeInTheDocument()
     })
 
-    it('renders with info icon', () => {
+    it('renders as a circular button with green border', () => {
       render(<PositionExplainer putts={3} carryover={1} />)
       
       const button = screen.getByRole('button')
@@ -77,13 +80,16 @@ describe('PositionExplainer', () => {
   describe('Content Variations', () => {
     it('shows different formats correctly', () => {
       const { rerender } = render(<PositionExplainer putts={3} carryover={1} />)
-      expect(screen.getByText('3/1')).toBeInTheDocument()
+      expect(screen.getByText('3')).toBeInTheDocument()
+      expect(screen.getByText('1')).toBeInTheDocument()
       
       rerender(<PositionExplainer putts={4} carryover={0} />)
-      expect(screen.getByText('4/0')).toBeInTheDocument()
+      expect(screen.getByText('4')).toBeInTheDocument()
+      expect(screen.getByText('0')).toBeInTheDocument()
       
       rerender(<PositionExplainer putts={2} carryover={3} />)
-      expect(screen.getByText('2/3')).toBeInTheDocument()
+      expect(screen.getByText('2')).toBeInTheDocument()
+      expect(screen.getByText('3')).toBeInTheDocument()
     })
   })
 
@@ -96,6 +102,15 @@ describe('PositionExplainer', () => {
       expect(button).toHaveClass('border-green-500')
       expect(button).toHaveClass('rounded-full')
       expect(button).toHaveClass('hover:bg-green-50')
+    })
+
+    it('renders as a circular button with w-14 h-14 dimensions', () => {
+      render(<PositionExplainer putts={3} carryover={1} />)
+      
+      const button = screen.getByRole('button')
+      expect(button).toHaveClass('w-14')
+      expect(button).toHaveClass('h-14')
+      expect(button).toHaveClass('rounded-full')
     })
   })
 })

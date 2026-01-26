@@ -1,5 +1,4 @@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Info } from '@phosphor-icons/react';
 
 interface PositionExplainerProps {
   putts: number;
@@ -11,11 +10,14 @@ export function PositionExplainer({ putts, carryover }: PositionExplainerProps) 
     <Popover>
       <PopoverTrigger asChild>
         <button 
-          className="flex items-center gap-1 border-2 border-green-500 rounded-full px-3 py-2 hover:bg-green-50 transition-colors"
+          className="w-14 h-14 rounded-full font-bold transition-all duration-200 flex items-center justify-center relative border-2 border-green-500 bg-transparent text-green-700 hover:bg-green-50 cursor-pointer"
           aria-label={`Position completed in ${putts} ${putts === 1 ? 'putt' : 'putts'} with ${carryover} ${carryover === 1 ? 'shot' : 'shots'} remaining. Click for details.`}
         >
-          <span className="text-sm font-bold text-green-600">{putts}/{carryover}</span>
-          <Info size={14} className="text-green-600" weight="fill" />
+          <div className="text-xs font-medium leading-tight">
+            <span className="text-green-700">{putts}</span>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-green-600">{carryover}</span>
+          </div>
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
