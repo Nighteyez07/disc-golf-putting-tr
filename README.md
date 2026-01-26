@@ -14,6 +14,12 @@ A mobile-optimized web app for structured disc golf putting practice. Track your
 
 **Real-Time Tracking** - Live header display showing current position, cumulative score, and attempt breakdown updated with every putt.
 
+## Attribution
+
+This disc golf putting trainer was inspired by the instructional video ["Putting Practice - 9 Spot Drill"](https://youtu.be/uWt3f3zv4I4) by **Throwing for Good**. 
+
+The video demonstrates a structured 9-position putting practice routine that is the foundation of this digital training tool. Special thanks to Throwing for Good for creating excellent disc golf instructional content.
+
 ## Quick Start
 
 ### Prerequisites

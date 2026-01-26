@@ -7,7 +7,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Target, ArrowRight, TrendUp, XCircle, CheckCircle } from "@phosphor-icons/react"
+import { Target, ArrowRight, TrendUp, XCircle, CheckCircle, PlayCircle } from "@phosphor-icons/react"
+import { YOUTUBE_TUTORIAL, YOUTUBE_CREATOR } from "@/lib/constants"
 
 interface InstructionsDialogProps {
   open: boolean
@@ -54,6 +55,32 @@ export function InstructionsDialog({ open, onClose }: InstructionsDialogProps) {
               </ul>
               <p className="text-xs italic mt-2">
                 💡 The triangle layout helps you practice from increasing distances while tracking your performance at each spot.
+              </p>
+            </div>
+          </section>
+
+          {/* Real-World Example */}
+          <section>
+            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+              <PlayCircle size={20} weight="bold" className="text-primary" />
+              Real-World Example
+            </h3>
+            <div className="text-sm text-muted-foreground space-y-2">
+              <p>
+                To see how this 9-spot drill is performed in a real disc golf putting scenario, 
+                check out the instructional video by {YOUTUBE_CREATOR}:
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => window.open(YOUTUBE_TUTORIAL, '_blank')}
+                className="w-full mt-2"
+              >
+                <PlayCircle size={20} className="mr-2" weight="fill" />
+                Watch Real-World Example ({YOUTUBE_CREATOR})
+              </Button>
+              <p className="text-xs italic mt-2">
+                This video demonstrates the exact drill that this game is based on. Watching it 
+                can help you understand the progression and technique used in real-world practice.
               </p>
             </div>
           </section>

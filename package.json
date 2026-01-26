@@ -1,5 +1,6 @@
 {
-    "name": "spark-template",
+    "name": "judge-disc-golf-trainer",
+    "description": "Judge - A disc golf putting trainer for the 9-spot drill technique",
     "private": true,
     "version": "0.0.0",
     "type": "module",
