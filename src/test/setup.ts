@@ -18,7 +18,6 @@ if (!global.crypto) {
 
 // Mock IndexedDB for testing environment
 if (typeof indexedDB === 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   global.indexedDB = {
     open: vi.fn(() => ({
       result: null,
@@ -27,6 +26,5 @@ if (typeof indexedDB === 'undefined') {
       onerror: null,
       onupgradeneeded: null,
     })),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any
+  } as IDBFactory
 }
