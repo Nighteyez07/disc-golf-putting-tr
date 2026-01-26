@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { Session, Position, PuttResult } from "./lib/types"
 import { 
   createNewSession, 
@@ -39,6 +39,10 @@ function App() {
   const [processingPutt, setProcessingPutt] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
   const [showCompletionPopup, setShowCompletionPopup] = useState(false)
+  
+  // Use a ref to track processing state immediately (synchronous check)
+  // This prevents race conditions from rapid clicks before React re-renders
+  const isProcessingRef = useRef(false)
 
   useEffect(() => {
     async function initialize() {
@@ -241,7 +245,11 @@ function App() {
   }, [session.penaltyMode, completePosition])
 
   const recordPutt = useCallback(async (result: PuttResult) => {
-    if (processingPutt) return
+    // Use ref for immediate synchronous check to prevent race conditions
+    if (isProcessingRef.current) return
+    
+    // Set both ref (synchronous) and state (for UI)
+    isProcessingRef.current = true
     setProcessingPutt(true)
 
     const currentPos = getCurrentPosition()
@@ -268,9 +276,11 @@ function App() {
 
     setTimeout(() => {
       checkPositionComplete(updatedPosition, updatedPositions)
+      // Clear both ref and state
+      isProcessingRef.current = false
       setProcessingPutt(false)
     }, 200)
-  }, [session, getCurrentPosition, processingPutt, checkPositionComplete])
+  }, [session, getCurrentPosition, checkPositionComplete])
 
 
   const handleContinueWithPenalty = useCallback(() => {
