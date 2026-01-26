@@ -409,7 +409,7 @@ function App() {
         </div>
 
         {/* Sticky game controls - always at bottom */}
-        <div className="sticky bottom-0 bg-background border-t border-border shadow-lg z-10" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+        <div className="sticky bottom-0 mt-auto bg-background border-t border-border shadow-lg z-10" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
           <PuttStatus
             position={currentPosition}
             penaltyMode={session.penaltyMode}
