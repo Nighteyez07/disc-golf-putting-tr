@@ -28,6 +28,7 @@ import { motion } from "framer-motion"
 type AppView = "game" | "complete" | "history"
 
 const INSTRUCTIONS_SEEN_KEY = "instructions_seen"
+const MAX_POSITIONS = 9
 
 function App() {
   const [session, setSession] = useState<Session>(createNewSession())
@@ -128,49 +129,75 @@ function App() {
     allPositions: Position[],
     status: "success" | "continued-penalty"
   ) => {
-    const completedPosition: Position = {
-      ...position,
-      status,
-      completed: true,
-    }
-    
-    const posScore = calculatePositionScore(
-      completedPosition,
-      session.penaltyMode || status === "continued-penalty"
-    )
-    
-    completedPosition.positionScore = posScore
+    // Determine positionIndex from the position object itself, not from session state
+    // This avoids stale closure issues
+    const positionIndex = position.positionNumber - 1
 
-    const updatedPositions = [...allPositions]
-    updatedPositions[session.currentPositionNumber - 1] = completedPosition
-
-    if (session.currentPositionNumber < 9) {
-      const carryover = calculateCarryover(completedPosition)
-      const nextPositionIndex = completedPosition.positionNumber  // Use completed position's number instead of session.currentPositionNumber
-      const nextPosition = updatedPositions[nextPositionIndex]
-      
-      updatedPositions[nextPositionIndex] = {
-        ...nextPosition,
-        attemptsCarriedOver: carryover,
-        totalAttemptsAvailable: nextPosition.baseAttemptsAllocated + carryover,
-      }
-
+    if (position.positionNumber < MAX_POSITIONS) {
       setTimeout(() => {
-        setSession(prev => ({
-          ...prev,
-          currentPositionNumber: prev.currentPositionNumber + 1,
-          positions: updatedPositions,
-        }))
-        saveCurrentSession({
-          ...session,
-          currentPositionNumber: session.currentPositionNumber + 1,
-          positions: updatedPositions,
+        setSession(prev => {
+          // Use the current state to avoid stale closure issues
+          const newPositions = [...prev.positions]
+          
+          // Get the current position data from state
+          const currentPos = newPositions[positionIndex]
+          
+          // Mark current position as completed with updated data
+          const completedPos: Position = {
+            ...currentPos,
+            status,
+            completed: true,
+          }
+          
+          const posScore = calculatePositionScore(
+            completedPos,
+            prev.penaltyMode || status === "continued-penalty"
+          )
+          
+          completedPos.positionScore = posScore
+          newPositions[positionIndex] = completedPos
+          
+          // Calculate carryover and add to next position
+          // Note: calculateCarryover returns 0 for non-success status
+          const carryover = calculateCarryover(completedPos)
+          const nextPositionIndex = positionIndex + 1
+          // Bounds check: ensure next position exists
+          if (nextPositionIndex < newPositions.length) {
+            newPositions[nextPositionIndex] = {
+              ...newPositions[nextPositionIndex],
+              attemptsCarriedOver: carryover,
+              totalAttemptsAvailable: newPositions[nextPositionIndex].baseAttemptsAllocated + carryover,
+            }
+          }
+          
+          const newSession = {
+            ...prev,
+            currentPositionNumber: prev.currentPositionNumber + 1,
+            positions: newPositions,
+          }
+          saveCurrentSession(newSession)
+          return newSession
         })
       }, 500)
     } else {
+      const completedPosition: Position = {
+        ...position,
+        status,
+        completed: true,
+      }
+      
+      const posScore = calculatePositionScore(
+        completedPosition,
+        session.penaltyMode || status === "continued-penalty"
+      )
+      
+      completedPosition.positionScore = posScore
+      
+      const updatedPositions = [...allPositions]
+      updatedPositions[positionIndex] = completedPosition
       finishSession(updatedPositions)
     }
-  }, [session])
+  }, [session.penaltyMode])
 
   const finishSession = useCallback(async (positions: Position[]) => {
     const endTime = Date.now()
