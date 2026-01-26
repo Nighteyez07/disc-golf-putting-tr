@@ -35,3 +35,7 @@ pids
 .devcontainer/
 
 .spark-workbench-id
+
+# Test demo files
+test-demo.html
+src/test-demo.tsx
