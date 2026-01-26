@@ -161,7 +161,7 @@ describe('GameHeader - Progression Tracker', () => {
       session.currentPositionNumber = 2
       const currentPosition = session.positions[1]
 
-      const { container } = render(
+      render(
         <GameHeader
           currentPosition={2}
           totalPositions={9}
@@ -185,7 +185,7 @@ describe('GameHeader - Progression Tracker', () => {
       session.currentPositionNumber = 3
       const currentPosition = session.positions[2]
 
-      const { container } = render(
+      render(
         <GameHeader
           currentPosition={3}
           totalPositions={9}
@@ -215,7 +215,7 @@ describe('GameHeader - Progression Tracker', () => {
       session.currentPositionNumber = 3
       const currentPosition = session.positions[2]
 
-      const { container } = render(
+      render(
         <GameHeader
           currentPosition={3}
           totalPositions={9}
@@ -240,7 +240,7 @@ describe('GameHeader - Progression Tracker', () => {
       session.currentPositionNumber = 2
       const currentPosition = session.positions[1]
 
-      const { container } = render(
+      render(
         <GameHeader
           currentPosition={2}
           totalPositions={9}
@@ -321,7 +321,7 @@ describe('GameHeader - Progression Tracker', () => {
           currentPosition={1}
           totalPositions={9}
           cumulativeScore={0}
-          position={null as any}
+          position={null as unknown as Position}
           penaltyMode={false}
           session={session}
           onRestart={() => {}}
