@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -22,6 +23,9 @@ export function InstructionsDialog({ open, onClose }: InstructionsDialogProps) {
             <Target size={28} weight="duotone" className="text-primary" />
             How to Play
           </DialogTitle>
+          <DialogDescription>
+            Learn how to use the disc golf putting trainer to improve your putting skills
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
