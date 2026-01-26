@@ -1,6 +1,7 @@
 import { Position } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { calculateCarryover } from "@/lib/game-logic"
+import { PositionExplainer } from "./PositionExplainer"
 
 interface PositionTriangleProps {
   positions: Position[]
@@ -22,6 +23,19 @@ export function PositionTriangle({
     // Calculate carryover for completed positions
     const carryover = isComplete ? calculateCarryover(position) : 0
     
+    // For completed success positions, render the PositionExplainer directly
+    if (isComplete && isSuccess) {
+      return (
+        <div key={position.positionNumber} className="w-14 h-14 flex items-center justify-center">
+          <PositionExplainer 
+            putts={position.attemptsUsed} 
+            carryover={carryover} 
+          />
+        </div>
+      )
+    }
+    
+    // For all other states, render a button
     return (
       <button
         key={position.positionNumber}
@@ -33,22 +47,13 @@ export function PositionTriangle({
           "disabled:cursor-default",
           // Current position (in progress)
           isCurrent && !isComplete && "bg-primary text-primary-foreground shadow-lg scale-110 ring-4 ring-primary/30",
-          // Completed with success - NEW DESIGN: thin green border with ratio
-          isComplete && isSuccess && "border-2 border-green-500 bg-transparent text-green-700",
           // Completed with penalty - yellow border
           isComplete && isPenalty && "border-2 border-yellow-500 bg-transparent text-yellow-700",
           // Not started
           !isCurrent && !isComplete && "bg-secondary text-secondary-foreground border-2 border-border",
         )}
       >
-        {isComplete && isSuccess ? (
-          // NEW: Display ratio instead of checkmark
-          <div className="text-xs font-medium leading-tight">
-            <span className="text-green-700">{position.attemptsUsed}</span>
-            <span className="text-muted-foreground">/</span>
-            <span className="text-green-600">{carryover}</span>
-          </div>
-        ) : isComplete && isPenalty ? (
+        {isComplete && isPenalty ? (
           // Penalty mode display - show attempts used
           <div className="text-xs font-medium text-yellow-700">
             {position.attemptsUsed}
