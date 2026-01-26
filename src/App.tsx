@@ -80,51 +80,76 @@ function App() {
     return session.positions[session.currentPositionNumber - 1]
   }, [session])
 
-  const recordPutt = useCallback(async (result: PuttResult) => {
-    if (processingPutt) return
-    setProcessingPutt(true)
-
-    const currentPos = getCurrentPosition()
+  const finishSession = useCallback(async () => {
+    const endTime = Date.now()
     
-    const updatedPosition: Position = {
-      ...currentPos,
-      attemptsUsed: currentPos.attemptsUsed + 1,
-      puttsInSunk: result === "sink" ? currentPos.puttsInSunk + 1 : currentPos.puttsInSunk,
-      putts: [...currentPos.putts, { result, timestamp: Date.now() }],
-      status: currentPos.status === "not-started" ? "in-progress" : currentPos.status,
-    }
-
-    const updatedPositions = [...session.positions]
-    updatedPositions[session.currentPositionNumber - 1] = updatedPosition
-
-    setSession(prev => ({
-      ...prev,
-      positions: updatedPositions,
-    }))
-
-    if (result === "sink") {
-      toast.success("Sink!", { duration: 1000 })
-    }
-
-    setTimeout(() => {
-      checkPositionComplete(updatedPosition, updatedPositions)
-      setProcessingPutt(false)
-    }, 200)
-  }, [session, getCurrentPosition, processingPutt, checkPositionComplete])
-
-  const checkPositionComplete = useCallback((
-    position: Position,
-    allPositions: Position[]
-  ) => {
-    if (position.puttsInSunk >= 3) {
-      completePosition(position, allPositions, "success")
-      return
-    }
-
-    if (position.attemptsUsed >= position.totalAttemptsAvailable && !session.penaltyMode) {
-      setShowRestartDialog(true)
-    }
-  }, [session.penaltyMode, completePosition])
+    // Use the updater form to get the latest session state
+    setSession(prev => {
+      // Get positions from the latest state, not the parameter
+      // This ensures we have all completed positions with their latest data
+      let finalPositions = [...prev.positions];
+      
+      // Validate we have exactly 9 unique positions (1-9)
+      const positionNumbers = new Set(finalPositions.map(p => p.positionNumber));
+      if (positionNumbers.size !== 9 || finalPositions.length !== 9) {
+        console.warn('Positions array corrupted, reconstructing...');
+        // If corrupted, try to fix by ensuring we have positions 1-9
+        const fixedPositions: Position[] = [];
+        for (let i = 1; i <= 9; i++) {
+          const existing = finalPositions.find(p => p.positionNumber === i);
+          if (existing) {
+            fixedPositions.push(existing);
+          } else {
+            console.error(`Missing position ${i}`);
+          }
+        }
+        finalPositions = fixedPositions.length === 9 ? fixedPositions : prev.positions;
+      }
+      
+      // Sort positions by positionNumber to ensure correct order  
+      const sortedPositions = [...finalPositions].sort((a, b) => a.positionNumber - b.positionNumber);
+      
+      // Ensure all positions have proper completion status and scores
+      const completedPositions = sortedPositions.map(pos => {
+        const updatedPos = {
+          ...pos,
+          completed: true,
+          // Ensure status is set if not already
+          status: pos.status === "not-started" || pos.status === "in-progress" 
+            ? "success" 
+            : pos.status
+        }
+        
+        // Recalculate position score to ensure it's correct
+        if (updatedPos.puttsInSunk >= 3 && updatedPos.status === "success") {
+          updatedPos.positionScore = 3
+        } else if (updatedPos.status === "continued-penalty") {
+          const overageAttempts = updatedPos.attemptsUsed - updatedPos.totalAttemptsAvailable
+          updatedPos.positionScore = Math.max(0, overageAttempts) * -1
+        }
+        
+        return updatedPos
+      })
+      
+      const finalSession: Session = {
+        ...prev,
+        positions: completedPositions,
+        endTime,
+        currentPositionNumber: 9,
+      }
+      
+      finalSession.finalScore = calculateSessionScore(finalSession)
+      finalSession.sessionSummary = createSessionSummary(finalSession)
+      
+      // Archive and show popup asynchronously
+      archiveSession(finalSession).then(() => {
+        clearCurrentSession()
+        setShowCompletionPopup(true)
+      })
+      
+      return finalSession
+    })
+  }, [])
 
   const completePosition = useCallback((
     position: Position,
@@ -201,76 +226,52 @@ function App() {
     }
   }, [session.penaltyMode, finishSession])
 
-  const finishSession = useCallback(async () => {
-    const endTime = Date.now()
+  const checkPositionComplete = useCallback((
+    position: Position,
+    allPositions: Position[]
+  ) => {
+    if (position.puttsInSunk >= 3) {
+      completePosition(position, allPositions, "success")
+      return
+    }
+
+    if (position.attemptsUsed >= position.totalAttemptsAvailable && !session.penaltyMode) {
+      setShowRestartDialog(true)
+    }
+  }, [session.penaltyMode, completePosition])
+
+  const recordPutt = useCallback(async (result: PuttResult) => {
+    if (processingPutt) return
+    setProcessingPutt(true)
+
+    const currentPos = getCurrentPosition()
     
-    // Use the updater form to get the latest session state
-    setSession(prev => {
-      // Get positions from the latest state, not the parameter
-      // This ensures we have all completed positions with their latest data
-      let finalPositions = [...prev.positions];
-      
-      // Validate we have exactly 9 unique positions (1-9)
-      const positionNumbers = new Set(finalPositions.map(p => p.positionNumber));
-      if (positionNumbers.size !== 9 || finalPositions.length !== 9) {
-        console.warn('Positions array corrupted, reconstructing...');
-        // If corrupted, try to fix by ensuring we have positions 1-9
-        const fixedPositions: Position[] = [];
-        for (let i = 1; i <= 9; i++) {
-          const existing = finalPositions.find(p => p.positionNumber === i);
-          if (existing) {
-            fixedPositions.push(existing);
-          } else {
-            console.error(`Missing position ${i}`);
-          }
-        }
-        finalPositions = fixedPositions.length === 9 ? fixedPositions : prev.positions;
-      }
-      
-      // Sort positions by positionNumber to ensure correct order  
-      const sortedPositions = [...finalPositions].sort((a, b) => a.positionNumber - b.positionNumber);
-      
-      // Ensure all positions have proper completion status and scores
-      const completedPositions = sortedPositions.map(pos => {
-        const updatedPos = {
-          ...pos,
-          completed: true,
-          // Ensure status is set if not already
-          status: pos.status === "not-started" || pos.status === "in-progress" 
-            ? "success" 
-            : pos.status
-        }
-        
-        // Recalculate position score to ensure it's correct
-        if (updatedPos.puttsInSunk >= 3 && updatedPos.status === "success") {
-          updatedPos.positionScore = 3
-        } else if (updatedPos.status === "continued-penalty") {
-          const overageAttempts = updatedPos.attemptsUsed - updatedPos.totalAttemptsAvailable
-          updatedPos.positionScore = Math.max(0, overageAttempts) * -1
-        }
-        
-        return updatedPos
-      })
-      
-      const finalSession: Session = {
-        ...prev,
-        positions: completedPositions,
-        endTime,
-        currentPositionNumber: 9,
-      }
-      
-      finalSession.finalScore = calculateSessionScore(finalSession)
-      finalSession.sessionSummary = createSessionSummary(finalSession)
-      
-      // Archive and show popup asynchronously
-      archiveSession(finalSession).then(() => {
-        clearCurrentSession()
-        setShowCompletionPopup(true)
-      })
-      
-      return finalSession
-    })
-  }, [])
+    const updatedPosition: Position = {
+      ...currentPos,
+      attemptsUsed: currentPos.attemptsUsed + 1,
+      puttsInSunk: result === "sink" ? currentPos.puttsInSunk + 1 : currentPos.puttsInSunk,
+      putts: [...currentPos.putts, { result, timestamp: Date.now() }],
+      status: currentPos.status === "not-started" ? "in-progress" : currentPos.status,
+    }
+
+    const updatedPositions = [...session.positions]
+    updatedPositions[session.currentPositionNumber - 1] = updatedPosition
+
+    setSession(prev => ({
+      ...prev,
+      positions: updatedPositions,
+    }))
+
+    if (result === "sink") {
+      toast.success("Sink!", { duration: 1000 })
+    }
+
+    setTimeout(() => {
+      checkPositionComplete(updatedPosition, updatedPositions)
+      setProcessingPutt(false)
+    }, 200)
+  }, [session, getCurrentPosition, processingPutt, checkPositionComplete])
+
 
   const handleContinueWithPenalty = useCallback(() => {
     setShowRestartDialog(false)
