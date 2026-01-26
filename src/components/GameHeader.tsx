@@ -16,7 +16,6 @@ interface GameHeaderProps {
 export function GameHeader({
   currentPosition,
   totalPositions,
-  cumulativeScore,
   position,
   penaltyMode,
   session,
