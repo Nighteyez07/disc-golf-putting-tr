@@ -77,6 +77,7 @@ export function GameHeader({
             size="icon"
             onClick={onRestart}
             className="h-9 w-9"
+            aria-label="Restart session"
           >
             <ArrowCounterClockwise className="h-5 w-5" />
           </Button>
