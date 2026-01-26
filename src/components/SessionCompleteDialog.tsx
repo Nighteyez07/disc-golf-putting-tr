@@ -31,9 +31,9 @@ export function SessionCompleteDialog({
   const successPositions = session.positions.filter(p => p.status === "success")
   const penaltyPositions = session.positions.filter(p => p.status === "continued-penalty")
   
-  // Calculate total shots taken vs total attempts
+  // Calculate total shots taken vs BASE attempts (not including carryover)
   const totalShotsTaken = session.positions.reduce((sum, pos) => sum + pos.attemptsUsed, 0)
-  const totalAttemptsAvailable = session.positions.reduce((sum, pos) => sum + pos.totalAttemptsAvailable, 0)
+  const totalBaseAttempts = session.positions.reduce((sum, pos) => sum + pos.baseAttemptsAllocated, 0)
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -87,7 +87,7 @@ export function SessionCompleteDialog({
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Total Shots Taken</span>
               <span className="font-semibold numeric text-sm">
-                {totalShotsTaken} / {totalAttemptsAvailable}
+                {totalShotsTaken} / {totalBaseAttempts}
               </span>
             </div>
           </div>
@@ -104,6 +104,9 @@ export function SessionCompleteDialog({
                   className="text-center p-2 rounded bg-secondary"
                 >
                   <div className="text-xs text-muted-foreground mb-1">P{pos.positionNumber}</div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {pos.attemptsUsed}/{pos.totalAttemptsAvailable}
+                  </div>
                   <div className={`numeric text-sm font-bold ${
                     pos.positionScore < 0 ? 'text-warning' : 'text-foreground'
                   }`}>

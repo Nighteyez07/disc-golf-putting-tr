@@ -176,20 +176,53 @@ function App() {
 
   const finishSession = useCallback(async (positions: Position[]) => {
     const endTime = Date.now()
-    const finalSession: Session = {
-      ...session,
-      positions,
-      endTime,
-    }
     
-    finalSession.finalScore = calculateSessionScore(finalSession)
-    finalSession.sessionSummary = createSessionSummary(finalSession)
-
-    setSession(finalSession)
-    await archiveSession(finalSession)
-    clearCurrentSession()
-    setShowCompletionPopup(true)
-  }, [session])
+    // Use the updater form to get the latest session state
+    setSession(prev => {
+      // Sort positions by positionNumber to ensure correct order  
+      const sortedPositions = [...prev.positions].sort((a, b) => a.positionNumber - b.positionNumber);
+      
+      // Ensure all positions have proper completion status and scores
+      const completedPositions = sortedPositions.map(pos => {
+        const updatedPos = {
+          ...pos,
+          completed: true,
+          // Ensure status is set if not already
+          status: pos.status === "not-started" || pos.status === "in-progress" 
+            ? "success" 
+            : pos.status
+        }
+        
+        // Recalculate position score to ensure it's correct
+        if (updatedPos.puttsInSunk >= 3 && updatedPos.status === "success") {
+          updatedPos.positionScore = 3
+        } else if (updatedPos.status === "continued-penalty") {
+          const overageAttempts = updatedPos.attemptsUsed - updatedPos.totalAttemptsAvailable
+          updatedPos.positionScore = Math.max(0, overageAttempts) * -1
+        }
+        
+        return updatedPos
+      })
+      
+      const finalSession: Session = {
+        ...prev,
+        positions: completedPositions,
+        endTime,
+        currentPositionNumber: 9,
+      }
+      
+      finalSession.finalScore = calculateSessionScore(finalSession)
+      finalSession.sessionSummary = createSessionSummary(finalSession)
+      
+      // Archive and show popup asynchronously
+      archiveSession(finalSession).then(() => {
+        clearCurrentSession()
+        setShowCompletionPopup(true)
+      })
+      
+      return finalSession
+    })
+  }, [])
 
   const handleContinueWithPenalty = useCallback(() => {
     setShowRestartDialog(false)
