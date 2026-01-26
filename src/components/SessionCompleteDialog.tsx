@@ -104,13 +104,10 @@ export function SessionCompleteDialog({
                   className="text-center p-2 rounded bg-secondary"
                 >
                   <div className="text-xs text-muted-foreground mb-1">P{pos.positionNumber}</div>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {pos.attemptsUsed}/{pos.totalAttemptsAvailable}
-                  </div>
                   <div className={`numeric text-sm font-bold ${
-                    pos.positionScore < 0 ? 'text-warning' : 'text-foreground'
+                    pos.status === "continued-penalty" ? 'text-warning' : 'text-foreground'
                   }`}>
-                    {formatScore(pos.positionScore)}
+                    {pos.attemptsUsed}/{pos.totalAttemptsAvailable}
                   </div>
                 </div>
               ))}

@@ -110,7 +110,7 @@ function App() {
       checkPositionComplete(updatedPosition, updatedPositions)
       setProcessingPutt(false)
     }, 200)
-  }, [session, getCurrentPosition, processingPutt])
+  }, [session, getCurrentPosition, processingPutt, checkPositionComplete])
 
   const checkPositionComplete = useCallback((
     position: Position,
@@ -124,7 +124,7 @@ function App() {
     if (position.attemptsUsed >= position.totalAttemptsAvailable && !session.penaltyMode) {
       setShowRestartDialog(true)
     }
-  }, [session.penaltyMode])
+  }, [session.penaltyMode, completePosition])
 
   const completePosition = useCallback((
     position: Position,
@@ -199,7 +199,7 @@ function App() {
       updatedPositions[positionIndex] = completedPosition
       finishSession(updatedPositions)
     }
-  }, [session.penaltyMode])
+  }, [session.penaltyMode, finishSession])
 
   const finishSession = useCallback(async () => {
     const endTime = Date.now()
