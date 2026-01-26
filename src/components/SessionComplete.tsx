@@ -21,6 +21,8 @@ export function SessionComplete({
 
   const successPositions = session.positions.filter(p => p.status === "success")
   const penaltyPositions = session.positions.filter(p => p.status === "continued-penalty")
+  const totalShots = session.positions.reduce((sum, pos) => sum + pos.attemptsUsed, 0)
+  const totalAllocated = session.positions.reduce((sum, pos) => sum + pos.baseAttemptsAllocated, 0)
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-5">
@@ -58,7 +60,7 @@ export function SessionComplete({
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Total Shots Taken</span>
             <span className="font-semibold numeric">
-              {session.positions.reduce((sum, pos) => sum + pos.attemptsUsed, 0)} / {session.positions.reduce((sum, pos) => sum + pos.baseAttemptsAllocated, 0)}
+              {totalShots} / {totalAllocated}
             </span>
           </div>
 
@@ -74,7 +76,7 @@ export function SessionComplete({
                 >
                   <div className="text-xs text-muted-foreground mb-1">P{pos.positionNumber}</div>
                   <div className={`numeric text-sm font-bold ${
-                    pos.positionScore < 0 ? 'text-warning' : 'text-foreground'
+                    pos.status === "continued-penalty" ? 'text-warning' : 'text-foreground'
                   }`}>
                     {pos.attemptsUsed}/{pos.totalAttemptsAvailable}
                   </div>

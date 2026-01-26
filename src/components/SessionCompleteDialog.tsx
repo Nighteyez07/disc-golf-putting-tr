@@ -105,7 +105,7 @@ export function SessionCompleteDialog({
                 >
                   <div className="text-xs text-muted-foreground mb-1">P{pos.positionNumber}</div>
                   <div className={`numeric text-sm font-bold ${
-                    pos.positionScore < 0 ? 'text-warning' : 'text-foreground'
+                    pos.status === "continued-penalty" ? 'text-warning' : 'text-foreground'
                   }`}>
                     {pos.attemptsUsed}/{pos.totalAttemptsAvailable}
                   </div>
