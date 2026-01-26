@@ -72,22 +72,26 @@ export function PositionTriangle({
           {renderPosition(positions[0])}
         </div>
         
-        <div className="flex justify-center gap-12">
+        {/* Row 2: Responsive gaps - smaller on mobile, full size on larger screens */}
+        <div className="flex justify-center gap-8 sm:gap-20">
           {renderPosition(positions[1])}
           {renderPosition(positions[2])}
         </div>
         
-        <div className="flex justify-center gap-20">
+        {/* Row 3: Responsive gaps */}
+        <div className="flex justify-center gap-16 sm:gap-40">
           {renderPosition(positions[3])}
           {renderPosition(positions[4])}
         </div>
         
-        <div className="flex justify-center gap-28">
+        {/* Row 4: Responsive gaps */}
+        <div className="flex justify-center gap-24 sm:gap-60">
           {renderPosition(positions[5])}
           {renderPosition(positions[6])}
         </div>
         
-        <div className="flex justify-center gap-36">
+        {/* Row 5: Responsive gaps */}
+        <div className="flex justify-center gap-32 sm:gap-80">
           {renderPosition(positions[7])}
           {renderPosition(positions[8])}
         </div>
