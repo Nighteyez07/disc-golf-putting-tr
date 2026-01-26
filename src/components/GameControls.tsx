@@ -14,6 +14,9 @@ export function GameControls({
   disabled = false,
   sessionComplete = false
 }: GameControlsProps) {
+  // Buttons should be disabled if either processing a putt or session is complete
+  const isDisabled = disabled || sessionComplete
+  
   return (
     <div className="bg-card px-5 py-6">
       {sessionComplete && (
@@ -24,7 +27,7 @@ export function GameControls({
       <div className="flex gap-3">
         <Button
           onClick={onRecordSink}
-          disabled={disabled}
+          disabled={isDisabled}
           className="flex-1 h-14 text-lg font-semibold bg-accent hover:bg-accent/90 text-accent-foreground"
         >
           <CheckCircle className="mr-2" size={24} weight="fill" />
@@ -32,7 +35,7 @@ export function GameControls({
         </Button>
         <Button
           onClick={onRecordMiss}
-          disabled={disabled}
+          disabled={isDisabled}
           variant="outline"
           className="flex-1 h-14 text-lg font-semibold border-2"
         >
