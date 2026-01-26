@@ -14,7 +14,8 @@ Special thanks to Throwing for Good for creating excellent disc golf instruction
 
 ### Disc Golf Icon
 - **Original Concept**: Disc golf icon from [FlatIcon](https://www.flaticon.com/free-icon/disc-golf_5978595)
-- **Actual Implementation**: Custom SVG icon created for this project
+- **Actual Implementation**: Custom SVG favicon created for this project
+- **Format**: SVG (favicon.svg) - Modern browsers support SVG favicons natively
 - **Design**: Blue disc golf basket with flying disc
 - **License**: Custom creation, MIT License (same as project)
 
