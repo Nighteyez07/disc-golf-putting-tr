@@ -39,7 +39,7 @@ export function PuttStatus({ position, penaltyMode }: PuttStatusProps) {
   }
 
   return (
-    <div className="bg-card px-5 py-6 border-b border-border">
+    <div className="bg-card px-5 py-6">
       <div className="flex items-center justify-center gap-3 mb-4">
         {renderPuttIndicators()}
       </div>
