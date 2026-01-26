@@ -4,6 +4,9 @@ import { cn } from "@/lib/utils"
 import { calculateCarryover } from "@/lib/game-logic"
 import { PositionExplainer } from "./PositionExplainer"
 
+// Delay to allow React state updates and DOM rendering to complete before scrolling
+const SCROLL_DELAY_MS = 50
+
 interface PositionTriangleProps {
   positions: Position[]
   currentPosition: number
@@ -15,7 +18,7 @@ export function PositionTriangle({
   currentPosition,
   onSelectPosition 
 }: PositionTriangleProps) {
-  const positionRefs = useRef<(HTMLDivElement | null)[]>(Array(9).fill(null))
+  const positionRefs = useRef<(HTMLDivElement | null)[]>(Array(positions.length).fill(null))
   
   // Auto-scroll to current position
   useEffect(() => {
@@ -30,7 +33,7 @@ export function PositionTriangle({
           block: 'center',
           inline: 'nearest'
         })
-      }, 50)
+      }, SCROLL_DELAY_MS)
     }
   }, [currentPosition])
   const renderPosition = (position: Position) => {
