@@ -170,17 +170,38 @@ function App() {
         })
       }, 500)
     } else {
-      finishSession(updatedPositions)
+      finishSession()
     }
   }, [session])
 
-  const finishSession = useCallback(async (positions: Position[]) => {
+  const finishSession = useCallback(async () => {
     const endTime = Date.now()
     
     // Use the updater form to get the latest session state
     setSession(prev => {
+      // Get positions from the latest state, not the parameter
+      // This ensures we have all completed positions with their latest data
+      let finalPositions = [...prev.positions];
+      
+      // Validate we have exactly 9 unique positions (1-9)
+      const positionNumbers = new Set(finalPositions.map(p => p.positionNumber));
+      if (positionNumbers.size !== 9 || finalPositions.length !== 9) {
+        console.warn('Positions array corrupted, reconstructing...');
+        // If corrupted, try to fix by ensuring we have positions 1-9
+        const fixedPositions: Position[] = [];
+        for (let i = 1; i <= 9; i++) {
+          const existing = finalPositions.find(p => p.positionNumber === i);
+          if (existing) {
+            fixedPositions.push(existing);
+          } else {
+            console.error(`Missing position ${i}`);
+          }
+        }
+        finalPositions = fixedPositions.length === 9 ? fixedPositions : prev.positions;
+      }
+      
       // Sort positions by positionNumber to ensure correct order  
-      const sortedPositions = [...prev.positions].sort((a, b) => a.positionNumber - b.positionNumber);
+      const sortedPositions = [...finalPositions].sort((a, b) => a.positionNumber - b.positionNumber);
       
       // Ensure all positions have proper completion status and scores
       const completedPositions = sortedPositions.map(pos => {
