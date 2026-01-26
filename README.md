@@ -39,6 +39,56 @@ npm run lint
 npm run optimize
 ```
 
+### Testing
+
+The project includes both unit tests (Vitest) and end-to-end tests (Playwright).
+
+#### Unit Tests
+
+```bash
+# Run unit tests
+npm run test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests in CI mode with coverage
+npm run test:ci
+
+# Watch mode for development
+npm run test:watch
+```
+
+#### E2E Tests
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run E2E tests with UI mode (interactive)
+npm run test:e2e:ui
+
+# Run E2E tests in debug mode
+npm run test:e2e:debug
+
+# Show test report
+npm run test:e2e:report
+```
+
+**First-time E2E setup:**
+```bash
+# Install Playwright browsers
+npx playwright install
+```
+
+**E2E Test Coverage:**
+- Instructions dialog display and interactions
+- Session restart confirmation flows
+- Game state persistence
+- UI element interactions
+
+E2E tests run against the local dev server (http://localhost:5173) which is automatically started by Playwright's webServer configuration.
+
 ### Project Structure
 
 ```
@@ -102,6 +152,8 @@ The app manages sessions through a hierarchical state model:
 - **Framer Motion** for smooth animations
 - **Sonner** for toast notifications
 - **IndexedDB** for persistent session history
+- **Vitest** + React Testing Library for unit testing
+- **Playwright** for end-to-end testing
 
 ## License
 
