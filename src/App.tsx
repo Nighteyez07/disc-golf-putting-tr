@@ -22,6 +22,7 @@ import { RestartDialog } from "./components/RestartDialog"
 import { SessionComplete } from "./components/SessionComplete"
 import { SessionHistory } from "./components/SessionHistory"
 import { InstructionsDialog } from "./components/InstructionsDialog"
+import { SessionCompleteDialog } from "./components/SessionCompleteDialog"
 import { Toaster, toast } from "sonner"
 import { motion } from "framer-motion"
 
@@ -36,6 +37,7 @@ function App() {
   const [currentView, setCurrentView] = useState<AppView>("game")
   const [processingPutt, setProcessingPutt] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
+  const [showCompletionPopup, setShowCompletionPopup] = useState(false)
 
   useEffect(() => {
     async function initialize() {
@@ -186,7 +188,7 @@ function App() {
     setSession(finalSession)
     await archiveSession(finalSession)
     clearCurrentSession()
-    setCurrentView("complete")
+    setShowCompletionPopup(true)
   }, [session])
 
   const handleContinueWithPenalty = useCallback(() => {
@@ -256,6 +258,18 @@ function App() {
   const handleCloseInstructions = useCallback(() => {
     localStorage.setItem(INSTRUCTIONS_SEEN_KEY, "true")
     setShowInstructions(false)
+  }, [])
+
+  const handleCloseCompletionPopup = useCallback(() => {
+    setShowCompletionPopup(false)
+  }, [])
+
+  const handleRestartFromCompletion = useCallback(() => {
+    setShowCompletionPopup(false)
+    const newSession = createNewSession()
+    setSession(newSession)
+    saveCurrentSession(newSession)
+    toast.info("Game restarted", { duration: 1500 })
   }, [])
 
   if (currentView === "history") {
@@ -341,6 +355,13 @@ function App() {
       <InstructionsDialog
         open={showInstructions}
         onClose={handleCloseInstructions}
+      />
+
+      <SessionCompleteDialog
+        open={showCompletionPopup}
+        session={session}
+        onRestart={handleRestartFromCompletion}
+        onClose={handleCloseCompletionPopup}
       />
 
       <Toaster position="top-center" />
