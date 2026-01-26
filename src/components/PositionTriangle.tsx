@@ -1,6 +1,6 @@
 import { Position } from "@/lib/types"
 import { cn } from "@/lib/utils"
-import { CheckCircle } from "@phosphor-icons/react"
+import { calculateCarryover } from "@/lib/game-logic"
 
 interface PositionTriangleProps {
   positions: Position[]
@@ -19,25 +19,44 @@ export function PositionTriangle({
     const isSuccess = position.status === "success"
     const isPenalty = position.status === "continued-penalty"
     
+    // Calculate carryover for completed positions
+    const carryover = isComplete ? calculateCarryover(position) : 0
+    
     return (
       <button
         key={position.positionNumber}
         onClick={() => onSelectPosition?.(position.positionNumber)}
         disabled={position.positionNumber !== currentPosition}
         className={cn(
-          "w-14 h-14 rounded-full font-bold text-lg transition-all duration-200",
+          "w-14 h-14 rounded-full font-bold transition-all duration-200",
           "flex items-center justify-center relative",
           "disabled:cursor-default",
+          // Current position (in progress)
           isCurrent && !isComplete && "bg-primary text-primary-foreground shadow-lg scale-110 ring-4 ring-primary/30",
-          isComplete && isSuccess && "bg-accent text-accent-foreground",
-          isComplete && isPenalty && "bg-warning text-warning-foreground",
+          // Completed with success - NEW DESIGN: thin green border with ratio
+          isComplete && isSuccess && "border-2 border-green-500 bg-transparent text-green-700",
+          // Completed with penalty - yellow border
+          isComplete && isPenalty && "border-2 border-yellow-500 bg-transparent text-yellow-700",
+          // Not started
           !isCurrent && !isComplete && "bg-secondary text-secondary-foreground border-2 border-border",
         )}
       >
-        {isComplete && isSuccess && (
-          <CheckCircle className="absolute inset-0 w-full h-full p-2" weight="fill" />
+        {isComplete && isSuccess ? (
+          // NEW: Display ratio instead of checkmark
+          <div className="text-xs font-medium leading-tight">
+            <span className="text-green-700">{position.attemptsUsed}</span>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-green-600">{carryover}</span>
+          </div>
+        ) : isComplete && isPenalty ? (
+          // Penalty mode display - show attempts used
+          <div className="text-xs font-medium text-yellow-700">
+            {position.attemptsUsed}
+          </div>
+        ) : (
+          // Not complete: show position number
+          <span className="text-lg">{position.positionNumber}</span>
         )}
-        {(!isComplete || !isSuccess) && position.positionNumber}
       </button>
     )
   }
