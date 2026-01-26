@@ -1,5 +1,4 @@
-import { Position } from "@/lib/types"
-import { formatScore } from "@/lib/game-logic"
+import { Position, Session } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { ArrowCounterClockwise, Book } from "@phosphor-icons/react"
 
@@ -9,6 +8,7 @@ interface GameHeaderProps {
   cumulativeScore: number
   position: Position
   penaltyMode: boolean
+  session: Session
   onRestart: () => void
   onShowInstructions?: () => void
 }
@@ -19,6 +19,7 @@ export function GameHeader({
   cumulativeScore,
   position,
   penaltyMode,
+  session,
   onRestart,
   onShowInstructions,
 }: GameHeaderProps) {
@@ -26,6 +27,25 @@ export function GameHeader({
   if (!position) {
     return null
   }
+
+  // Calculate cumulative shots taken across all completed + current positions
+  const totalShotsTaken = session.positions
+    .slice(0, currentPosition)
+    .reduce((sum, pos) => sum + pos.attemptsUsed, 0)
+
+  // Calculate cumulative attempts available across all completed + current positions
+  const totalAttemptsAvailable = session.positions
+    .slice(0, currentPosition)
+    .reduce((sum, pos) => sum + pos.totalAttemptsAvailable, 0)
+
+  // Determine color based on progression
+  const getProgressionColor = () => {
+    if (totalShotsTaken < totalAttemptsAvailable) return "text-green-600"
+    if (totalShotsTaken === totalAttemptsAvailable) return "text-orange-500"
+    return "text-red-600"
+  }
+
+  const progressionColor = getProgressionColor()
 
   const attemptsText = position.attemptsCarriedOver > 0
     ? `${position.totalAttemptsAvailable} shots (${position.baseAttemptsAllocated} + ${position.attemptsCarriedOver} carry)`
@@ -38,8 +58,8 @@ export function GameHeader({
           Position {currentPosition} of {totalPositions}
         </h1>
         <div className="flex items-center gap-4">
-          <div className="numeric text-primary">
-            {formatScore(cumulativeScore)}
+          <div className={`text-xl font-bold numeric ${progressionColor}`}>
+            {totalShotsTaken}/{totalAttemptsAvailable}
           </div>
           {onShowInstructions && (
             <Button
