@@ -22,6 +22,7 @@ import { RestartDialog } from "./components/RestartDialog"
 import { SessionComplete } from "./components/SessionComplete"
 import { SessionHistory } from "./components/SessionHistory"
 import { InstructionsDialog } from "./components/InstructionsDialog"
+import { SessionCompleteDialog } from "./components/SessionCompleteDialog"
 import { Toaster, toast } from "sonner"
 import { motion } from "framer-motion"
 
@@ -37,6 +38,7 @@ function App() {
   const [currentView, setCurrentView] = useState<AppView>("game")
   const [processingPutt, setProcessingPutt] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
+  const [showCompletionPopup, setShowCompletionPopup] = useState(false)
 
   useEffect(() => {
     async function initialize() {
@@ -199,22 +201,76 @@ function App() {
     }
   }, [session.penaltyMode])
 
-  const finishSession = useCallback(async (positions: Position[]) => {
+  const finishSession = useCallback(async () => {
     const endTime = Date.now()
-    const finalSession: Session = {
-      ...session,
-      positions,
-      endTime,
-    }
     
-    finalSession.finalScore = calculateSessionScore(finalSession)
-    finalSession.sessionSummary = createSessionSummary(finalSession)
-
-    setSession(finalSession)
-    await archiveSession(finalSession)
-    clearCurrentSession()
-    setCurrentView("complete")
-  }, [session])
+    // Use the updater form to get the latest session state
+    setSession(prev => {
+      // Get positions from the latest state, not the parameter
+      // This ensures we have all completed positions with their latest data
+      let finalPositions = [...prev.positions];
+      
+      // Validate we have exactly 9 unique positions (1-9)
+      const positionNumbers = new Set(finalPositions.map(p => p.positionNumber));
+      if (positionNumbers.size !== 9 || finalPositions.length !== 9) {
+        console.warn('Positions array corrupted, reconstructing...');
+        // If corrupted, try to fix by ensuring we have positions 1-9
+        const fixedPositions: Position[] = [];
+        for (let i = 1; i <= 9; i++) {
+          const existing = finalPositions.find(p => p.positionNumber === i);
+          if (existing) {
+            fixedPositions.push(existing);
+          } else {
+            console.error(`Missing position ${i}`);
+          }
+        }
+        finalPositions = fixedPositions.length === 9 ? fixedPositions : prev.positions;
+      }
+      
+      // Sort positions by positionNumber to ensure correct order  
+      const sortedPositions = [...finalPositions].sort((a, b) => a.positionNumber - b.positionNumber);
+      
+      // Ensure all positions have proper completion status and scores
+      const completedPositions = sortedPositions.map(pos => {
+        const updatedPos = {
+          ...pos,
+          completed: true,
+          // Ensure status is set if not already
+          status: pos.status === "not-started" || pos.status === "in-progress" 
+            ? "success" 
+            : pos.status
+        }
+        
+        // Recalculate position score to ensure it's correct
+        if (updatedPos.puttsInSunk >= 3 && updatedPos.status === "success") {
+          updatedPos.positionScore = 3
+        } else if (updatedPos.status === "continued-penalty") {
+          const overageAttempts = updatedPos.attemptsUsed - updatedPos.totalAttemptsAvailable
+          updatedPos.positionScore = Math.max(0, overageAttempts) * -1
+        }
+        
+        return updatedPos
+      })
+      
+      const finalSession: Session = {
+        ...prev,
+        positions: completedPositions,
+        endTime,
+        currentPositionNumber: 9,
+      }
+      
+      finalSession.finalScore = calculateSessionScore(finalSession)
+      finalSession.sessionSummary = createSessionSummary(finalSession)
+      
+      // Archive and show popup asynchronously
+      archiveSession(finalSession).then(() => {
+        clearCurrentSession()
+        setShowCompletionPopup(true)
+      })
+      
+      return finalSession
+    })
+  }, [])
 
   const handleContinueWithPenalty = useCallback(() => {
     setShowRestartDialog(false)
@@ -283,6 +339,18 @@ function App() {
   const handleCloseInstructions = useCallback(() => {
     localStorage.setItem(INSTRUCTIONS_SEEN_KEY, "true")
     setShowInstructions(false)
+  }, [])
+
+  const handleCloseCompletionPopup = useCallback(() => {
+    setShowCompletionPopup(false)
+  }, [])
+
+  const handleRestartFromCompletion = useCallback(() => {
+    setShowCompletionPopup(false)
+    const newSession = createNewSession()
+    setSession(newSession)
+    saveCurrentSession(newSession)
+    toast.info("Game restarted", { duration: 1500 })
   }, [])
 
   if (currentView === "history") {
@@ -368,6 +436,13 @@ function App() {
       <InstructionsDialog
         open={showInstructions}
         onClose={handleCloseInstructions}
+      />
+
+      <SessionCompleteDialog
+        open={showCompletionPopup}
+        session={session}
+        onRestart={handleRestartFromCompletion}
+        onClose={handleCloseCompletionPopup}
       />
 
       <Toaster position="top-center" />

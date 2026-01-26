@@ -38,6 +38,26 @@ export function InstructionsDialog({ open, onClose }: InstructionsDialogProps) {
             </p>
           </section>
 
+          {/* Setup Section */}
+          <section>
+            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+              <Target size={20} weight="bold" className="text-primary" />
+              Setup
+            </h3>
+            <div className="text-sm text-muted-foreground space-y-2">
+              <p>To get started with your putting practice:</p>
+              <ul className="list-disc list-inside space-y-1 ml-2">
+                <li>Grab <strong>9 discs</strong> from your bag</li>
+                <li>Start <strong>next to the basket</strong></li>
+                <li>Place or throw discs outward in a <strong>rough triangle</strong> pattern to represent positions 1–9</li>
+                <li>Position 1 should be closest to the basket, Position 9 the farthest</li>
+              </ul>
+              <p className="text-xs italic mt-2">
+                💡 The triangle layout helps you practice from increasing distances while tracking your performance at each spot.
+              </p>
+            </div>
+          </section>
+
           {/* Game Objective */}
           <section>
             <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
