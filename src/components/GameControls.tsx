@@ -13,7 +13,7 @@ export function GameControls({
   disabled = false 
 }: GameControlsProps) {
   return (
-    <div className="bg-card border-t border-border px-5 py-6 sticky bottom-0">
+    <div className="bg-card px-5 py-6">
       <div className="flex gap-3">
         <Button
           onClick={onRecordSink}

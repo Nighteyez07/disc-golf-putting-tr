@@ -393,7 +393,8 @@ function App() {
           onShowInstructions={handleShowInstructions}
         />
 
-        <div className="flex-1 overflow-auto">
+        {/* Scrollable pyramid area with bottom padding for sticky controls */}
+        <div className="flex-1 overflow-auto pb-52">
           <motion.div
             key={session.currentPositionNumber}
             initial={{ opacity: 0, x: 20 }}
@@ -405,18 +406,20 @@ function App() {
               currentPosition={session.currentPositionNumber}
             />
           </motion.div>
+        </div>
 
+        {/* Sticky game controls - always at bottom */}
+        <div className="sticky bottom-0 mt-auto bg-background border-t border-border shadow-lg z-10" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
           <PuttStatus
             position={currentPosition}
             penaltyMode={session.penaltyMode}
           />
+          <GameControls
+            onRecordSink={() => recordPutt("sink")}
+            onRecordMiss={() => recordPutt("miss")}
+            disabled={processingPutt}
+          />
         </div>
-
-        <GameControls
-          onRecordSink={() => recordPutt("sink")}
-          onRecordMiss={() => recordPutt("miss")}
-          disabled={processingPutt}
-        />
       </div>
 
       <RestartDialog

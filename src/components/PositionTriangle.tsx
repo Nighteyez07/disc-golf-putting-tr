@@ -1,7 +1,11 @@
+import { useEffect, useRef } from "react"
 import { Position } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { calculateCarryover } from "@/lib/game-logic"
 import { PositionExplainer } from "./PositionExplainer"
+
+// Delay to allow React state updates and DOM rendering to complete before scrolling
+const SCROLL_DELAY_MS = 50
 
 interface PositionTriangleProps {
   positions: Position[]
@@ -14,6 +18,24 @@ export function PositionTriangle({
   currentPosition,
   onSelectPosition 
 }: PositionTriangleProps) {
+  const positionRefs = useRef<(HTMLDivElement | null)[]>(Array(positions.length).fill(null))
+  
+  // Auto-scroll to current position
+  useEffect(() => {
+    const currentIndex = currentPosition - 1
+    const currentRef = positionRefs.current[currentIndex]
+    
+    if (currentRef) {
+      // Small delay to allow DOM updates to settle
+      setTimeout(() => {
+        currentRef.scrollIntoView({
+          behavior: 'instant',
+          block: 'center',
+          inline: 'nearest'
+        })
+      }, SCROLL_DELAY_MS)
+    }
+  }, [currentPosition])
   const renderPosition = (position: Position) => {
     const isCurrent = position.positionNumber === currentPosition
     const isComplete = position.completed
@@ -26,7 +48,11 @@ export function PositionTriangle({
     // For completed success positions, render the PositionExplainer directly
     if (isComplete && isSuccess) {
       return (
-        <div key={position.positionNumber} className="w-14 h-14 flex items-center justify-center">
+        <div 
+          key={position.positionNumber} 
+          ref={el => positionRefs.current[position.positionNumber - 1] = el}
+          className="w-14 h-14 flex items-center justify-center"
+        >
           <PositionExplainer 
             putts={position.attemptsUsed} 
             carryover={carryover} 
@@ -39,6 +65,7 @@ export function PositionTriangle({
     return (
       <button
         key={position.positionNumber}
+        ref={el => positionRefs.current[position.positionNumber - 1] = el}
         onClick={() => onSelectPosition?.(position.positionNumber)}
         disabled={position.positionNumber !== currentPosition}
         className={cn(
