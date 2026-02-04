@@ -35,7 +35,7 @@ function App() {
   const [session, setSession] = useState<Session>(createNewSession())
   const [showRestartDialog, setShowRestartDialog] = useState(false)
   const [showManualRestartDialog, setShowManualRestartDialog] = useState(false)
-  const [currentView, setCurrentView] = useState<AppView>("game")
+  const [currentView, setCurrentView] = useState<AppView>("history")
   const [processingPutt, setProcessingPutt] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
   const [showCompletionPopup, setShowCompletionPopup] = useState(false)
@@ -58,6 +58,11 @@ function App() {
       const savedSession = loadCurrentSession()
       if (savedSession && !savedSession.endTime) {
         setSession(savedSession)
+        // If there's an active session, navigate to game view
+        setCurrentView("game")
+      } else {
+        // Otherwise stay on history view (default)
+        setCurrentView("history")
       }
 
       // Check if user has seen instructions before
@@ -323,10 +328,6 @@ function App() {
     setCurrentView("history")
   }, [])
 
-  const handleBackToGame = useCallback(() => {
-    setCurrentView("game")
-  }, [])
-
   const handleManualRestart = useCallback(() => {
     setShowManualRestartDialog(true)
   }, [])
@@ -354,6 +355,7 @@ function App() {
 
   const handleCloseCompletionPopup = useCallback(() => {
     setShowCompletionPopup(false)
+    setCurrentView("history")
   }, [])
 
   const handleRestartFromCompletion = useCallback(() => {
@@ -361,14 +363,19 @@ function App() {
     const newSession = createNewSession()
     setSession(newSession)
     saveCurrentSession(newSession)
+    setCurrentView("game")
     toast.info("Game restarted", { duration: 1500 })
   }, [])
 
   if (currentView === "history") {
     return (
       <>
-        <SessionHistory onBack={handleBackToGame} />
+        <SessionHistory onNewRound={handleNewGame} />
         <Toaster position="top-center" />
+        <InstructionsDialog
+          open={showInstructions}
+          onClose={handleCloseInstructions}
+        />
       </>
     )
   }
