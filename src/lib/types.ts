@@ -23,6 +23,7 @@ export interface Position {
   status: PositionStatus
   putts: Putt[]
   completed: boolean
+  accuracyRate?: number
 }
 
 export interface UndoHistoryEntry {

@@ -12,6 +12,8 @@ import {
   createUndoSnapshot,
   canUndo,
   canRedo,
+  calculateAccuracyRate,
+  getAccuracyColor,
 } from './game-logic'
 import { Position, Session } from './types'
 
@@ -608,6 +610,26 @@ describe('formatScore', () => {
   })
 })
 
+describe('getAccuracyColor', () => {
+  it('returns green color class for accuracy >= 75%', () => {
+    expect(getAccuracyColor(75)).toBe('text-green-600 dark:text-green-500')
+    expect(getAccuracyColor(100)).toBe('text-green-600 dark:text-green-500')
+    expect(getAccuracyColor(80)).toBe('text-green-600 dark:text-green-500')
+  })
+
+  it('returns yellow color class for accuracy between 50-74%', () => {
+    expect(getAccuracyColor(50)).toBe('text-yellow-600 dark:text-yellow-500')
+    expect(getAccuracyColor(74)).toBe('text-yellow-600 dark:text-yellow-500')
+    expect(getAccuracyColor(60)).toBe('text-yellow-600 dark:text-yellow-500')
+  })
+
+  it('returns red color class for accuracy < 50%', () => {
+    expect(getAccuracyColor(49)).toBe('text-red-600 dark:text-red-500')
+    expect(getAccuracyColor(0)).toBe('text-red-600 dark:text-red-500')
+    expect(getAccuracyColor(25)).toBe('text-red-600 dark:text-red-500')
+  })
+})
+
 describe('Undo/Redo functionality', () => {
   describe('createUndoSnapshot', () => {
     it('creates a snapshot of position state', () => {
@@ -707,5 +729,137 @@ describe('Undo/Redo functionality', () => {
       
       expect(canRedo(redoHistory)).toBe(true)
     })
+  })
+})
+
+describe('calculateAccuracyRate', () => {
+  it('calculates accuracy correctly for perfect position', () => {
+    const position: Position = {
+      positionNumber: 1,
+      baseAttemptsAllocated: 3,
+      attemptsCarriedOver: 0,
+      totalAttemptsAvailable: 3,
+      attemptsUsed: 3,
+      puttsInSunk: 3,
+      positionScore: 3,
+      status: 'success',
+      putts: [],
+      completed: true,
+    }
+    expect(calculateAccuracyRate(position)).toBe(100)
+  })
+
+  it('calculates accuracy correctly for 50% success rate', () => {
+    const position: Position = {
+      positionNumber: 1,
+      baseAttemptsAllocated: 6,
+      attemptsCarriedOver: 0,
+      totalAttemptsAvailable: 6,
+      attemptsUsed: 6,
+      puttsInSunk: 3,
+      positionScore: 3,
+      status: 'success',
+      putts: [],
+      completed: true,
+    }
+    expect(calculateAccuracyRate(position)).toBe(50)
+  })
+
+  it('calculates accuracy correctly for 75% success rate', () => {
+    const position: Position = {
+      positionNumber: 1,
+      baseAttemptsAllocated: 4,
+      attemptsCarriedOver: 0,
+      totalAttemptsAvailable: 4,
+      attemptsUsed: 4,
+      puttsInSunk: 3,
+      positionScore: 3,
+      status: 'success',
+      putts: [],
+      completed: true,
+    }
+    expect(calculateAccuracyRate(position)).toBe(75)
+  })
+
+  it('calculates accuracy for penalty mode correctly', () => {
+    const position: Position = {
+      positionNumber: 1,
+      baseAttemptsAllocated: 3,
+      attemptsCarriedOver: 0,
+      totalAttemptsAvailable: 3,
+      attemptsUsed: 11,
+      puttsInSunk: 3,
+      positionScore: -8,
+      status: 'continued-penalty',
+      putts: [],
+      completed: true,
+    }
+    // 3/11 = 27.27%, rounds to 27%
+    expect(calculateAccuracyRate(position)).toBe(27)
+  })
+
+  it('returns 0 for position with no attempts used', () => {
+    const position: Position = {
+      positionNumber: 1,
+      baseAttemptsAllocated: 3,
+      attemptsCarriedOver: 0,
+      totalAttemptsAvailable: 3,
+      attemptsUsed: 0,
+      puttsInSunk: 0,
+      positionScore: 0,
+      status: 'not-started',
+      putts: [],
+      completed: false,
+    }
+    expect(calculateAccuracyRate(position)).toBe(0)
+  })
+
+  it('handles edge case of 1 attempt with 1 sink', () => {
+    const position: Position = {
+      positionNumber: 1,
+      baseAttemptsAllocated: 3,
+      attemptsCarriedOver: 0,
+      totalAttemptsAvailable: 3,
+      attemptsUsed: 1,
+      puttsInSunk: 1,
+      positionScore: 0,
+      status: 'in-progress',
+      putts: [],
+      completed: false,
+    }
+    expect(calculateAccuracyRate(position)).toBe(100)
+  })
+
+  it('rounds accuracy to nearest whole number', () => {
+    const position: Position = {
+      positionNumber: 1,
+      baseAttemptsAllocated: 3,
+      attemptsCarriedOver: 0,
+      totalAttemptsAvailable: 3,
+      attemptsUsed: 7,
+      puttsInSunk: 3,
+      positionScore: 0,
+      status: 'continued-penalty',
+      putts: [],
+      completed: true,
+    }
+    // 3/7 = 42.857%, should round to 43%
+    expect(calculateAccuracyRate(position)).toBe(43)
+  })
+
+  it('handles position with 0 putts sunk', () => {
+    const position: Position = {
+      positionNumber: 1,
+      baseAttemptsAllocated: 3,
+      attemptsCarriedOver: 0,
+      totalAttemptsAvailable: 3,
+      attemptsUsed: 3,
+      puttsInSunk: 0,
+      positionScore: 0,
+      status: 'failed-restart',
+      putts: [],
+      completed: true,
+    }
+    expect(calculateAccuracyRate(position)).toBe(0)
   })
 })

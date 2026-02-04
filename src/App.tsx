@@ -9,6 +9,7 @@ import {
   createUndoSnapshot,
   canUndo,
   canRedo,
+  calculateAccuracyRate,
 } from "./lib/game-logic"
 import { 
   saveCurrentSession, 
@@ -148,6 +149,9 @@ function App() {
           updatedPos.positionScore = Math.max(0, overageAttempts) * -1
         }
         
+        // Calculate accuracy rate for each position
+        updatedPos.accuracyRate = calculateAccuracyRate(updatedPos)
+        
         return updatedPos
       })
       
@@ -206,6 +210,7 @@ function App() {
           )
           
           completedPos.positionScore = posScore
+          completedPos.accuracyRate = calculateAccuracyRate(completedPos)
           newPositions[positionIndex] = completedPos
           
           // Calculate carryover and add to next position
@@ -243,6 +248,7 @@ function App() {
       )
       
       completedPosition.positionScore = posScore
+      completedPosition.accuracyRate = calculateAccuracyRate(completedPosition)
       
       const updatedPositions = [...allPositions]
       updatedPositions[positionIndex] = completedPosition

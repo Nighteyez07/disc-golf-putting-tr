@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { formatScore, formatDuration } from "@/lib/game-logic"
+import { formatScore, formatDuration, getAccuracyColor } from "@/lib/game-logic"
 import { Trophy, Plus } from "@phosphor-icons/react"
 import { useEffect, useState } from "react"
 import { getSessionHistory } from "@/lib/storage"
@@ -141,9 +141,9 @@ export function SessionHistory({ onNewRound }: SessionHistoryProps) {
                           <div className="text-sm font-semibold mb-2">Detailed Breakdown</div>
                           <div className="space-y-2">
                             {session.positions.map((pos) => {
-                              const accuracy = pos.puttsInSunk > 0 && pos.attemptsUsed > 0
+                              const accuracy = pos.accuracyRate ?? (pos.puttsInSunk > 0 && pos.attemptsUsed > 0
                                 ? Math.round((pos.puttsInSunk / pos.attemptsUsed) * 100)
-                                : 0
+                                : 0)
                               const isPenalty = pos.status === "continued-penalty"
                               
                               return (
@@ -176,7 +176,7 @@ export function SessionHistory({ onNewRound }: SessionHistoryProps) {
                                       }`}>
                                         {pos.positionScore > 0 ? `+${pos.positionScore}` : pos.positionScore}
                                       </div>
-                                      <div className="text-xs text-muted-foreground">
+                                      <div className={`text-xs font-semibold ${getAccuracyColor(accuracy)}`}>
                                         {accuracy}% acc
                                       </div>
                                     </div>
