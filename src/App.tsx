@@ -14,6 +14,7 @@ import {
   archiveSession,
   initDB,
 } from "./lib/storage"
+import { haptics } from "./lib/haptics"
 import { GameHeader } from "./components/GameHeader"
 import { PositionTriangle } from "./components/PositionTriangle"
 import { PuttStatus } from "./components/PuttStatus"
@@ -23,6 +24,7 @@ import { SessionComplete } from "./components/SessionComplete"
 import { SessionHistory } from "./components/SessionHistory"
 import { InstructionsDialog } from "./components/InstructionsDialog"
 import { SessionCompleteDialog } from "./components/SessionCompleteDialog"
+import { SettingsDialog } from "./components/SettingsDialog"
 import { Toaster, toast } from "sonner"
 import { motion } from "framer-motion"
 
@@ -38,6 +40,7 @@ function App() {
   const [currentView, setCurrentView] = useState<AppView>("history")
   const [processingPutt, setProcessingPutt] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [showCompletionPopup, setShowCompletionPopup] = useState(false)
   
   // Use a ref to track processing state immediately (synchronous check)
@@ -291,6 +294,9 @@ function App() {
   const handleContinueWithPenalty = useCallback(() => {
     setShowRestartDialog(false)
     
+    // Trigger penalty haptic feedback
+    haptics.penalty()
+    
     const currentPos = getCurrentPosition()
     const updatedPosition: Position = {
       ...currentPos,
@@ -353,6 +359,14 @@ function App() {
     setShowInstructions(false)
   }, [])
 
+  const handleShowSettings = useCallback(() => {
+    setShowSettings(true)
+  }, [])
+
+  const handleCloseSettings = useCallback(() => {
+    setShowSettings(false)
+  }, [])
+
   const handleCloseCompletionPopup = useCallback(() => {
     setShowCompletionPopup(false)
     setCurrentView("history")
@@ -408,6 +422,7 @@ function App() {
           session={session}
           onRestart={handleManualRestart}
           onShowInstructions={handleShowInstructions}
+          onShowSettings={handleShowSettings}
         />
 
         {/* Scrollable pyramid area with bottom padding for sticky controls */}
@@ -458,6 +473,11 @@ function App() {
       <InstructionsDialog
         open={showInstructions}
         onClose={handleCloseInstructions}
+      />
+
+      <SettingsDialog
+        open={showSettings}
+        onClose={handleCloseSettings}
       />
 
       <SessionCompleteDialog
