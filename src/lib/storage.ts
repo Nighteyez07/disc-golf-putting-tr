@@ -73,6 +73,17 @@ export async function archiveSession(session: Session): Promise<void> {
       penaltyMode: session.penaltyMode,
       sessionSummary: session.sessionSummary,
       positionScores: session.positions.map(p => p.positionScore),
+      timestamp: session.startTime, // Add timestamp for index
+      positions: session.positions.map(p => ({
+        positionNumber: p.positionNumber,
+        baseAttemptsAllocated: p.baseAttemptsAllocated,
+        attemptsCarriedOver: p.attemptsCarriedOver,
+        totalAttemptsAvailable: p.totalAttemptsAvailable,
+        attemptsUsed: p.attemptsUsed,
+        puttsInSunk: p.puttsInSunk,
+        positionScore: p.positionScore,
+        status: p.status,
+      })),
     }
     
     store.put(sessionData)
