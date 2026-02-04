@@ -1,11 +1,14 @@
 import { useEffect, useState, useCallback, useRef } from "react"
-import { Session, Position, PuttResult } from "./lib/types"
+import { Session, Position, PuttResult, UndoHistoryEntry } from "./lib/types"
 import { 
   createNewSession, 
   calculateCarryover, 
   calculatePositionScore,
   calculateSessionScore,
   createSessionSummary,
+  createUndoSnapshot,
+  canUndo,
+  canRedo,
 } from "./lib/game-logic"
 import { 
   saveCurrentSession, 
@@ -30,6 +33,7 @@ type AppView = "game" | "complete" | "history"
 
 const INSTRUCTIONS_SEEN_KEY = "instructions_seen"
 const MAX_POSITIONS = 9
+const MAX_UNDO_HISTORY = 10
 
 function App() {
   const [session, setSession] = useState<Session>(createNewSession())
@@ -39,6 +43,10 @@ function App() {
   const [processingPutt, setProcessingPutt] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
   const [showCompletionPopup, setShowCompletionPopup] = useState(false)
+  
+  // Undo/Redo state
+  const [undoHistory, setUndoHistory] = useState<UndoHistoryEntry[]>([])
+  const [redoHistory, setRedoHistory] = useState<UndoHistoryEntry[]>([])
   
   // Use a ref to track processing state immediately (synchronous check)
   // This prevents race conditions from rapid clicks before React re-renders
@@ -79,6 +87,37 @@ function App() {
 
     return () => clearInterval(interval)
   }, [session])
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if currently in game view and not processing
+      if (currentView !== "game" || isProcessingRef.current) {
+        return
+      }
+      
+      // Ctrl+Z (Windows/Linux) or Cmd+Z (Mac) for undo
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+        event.preventDefault()
+        handleUndo()
+      }
+      
+      // Ctrl+Shift+Z (Windows/Linux) or Cmd+Shift+Z (Mac) for redo
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && event.shiftKey) {
+        event.preventDefault()
+        handleRedo()
+      }
+      
+      // Ctrl+Y (Windows/Linux alternative for redo)
+      if (event.ctrlKey && event.key === 'y' && !event.metaKey) {
+        event.preventDefault()
+        handleRedo()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentView, handleUndo, handleRedo])
 
   const getCurrentPosition = useCallback((): Position => {
     return session.positions[session.currentPositionNumber - 1]
@@ -163,6 +202,10 @@ function App() {
     // Determine positionIndex from the position object itself, not from session state
     // This avoids stale closure issues
     const positionIndex = position.positionNumber - 1
+    
+    // Clear undo/redo history on position completion
+    setUndoHistory([])
+    setRedoHistory([])
 
     if (position.positionNumber < MAX_POSITIONS) {
       setTimeout(() => {
@@ -254,6 +297,13 @@ function App() {
 
     const currentPos = getCurrentPosition()
     
+    // Save undo snapshot BEFORE making changes
+    const undoSnapshot = createUndoSnapshot(
+      session.currentPositionNumber - 1,
+      currentPos,
+      session.penaltyMode
+    )
+    
     const updatedPosition: Position = {
       ...currentPos,
       attemptsUsed: currentPos.attemptsUsed + 1,
@@ -269,6 +319,11 @@ function App() {
       ...prev,
       positions: updatedPositions,
     }))
+    
+    // Add to undo history (limit to MAX_UNDO_HISTORY entries)
+    setUndoHistory(prev => [...prev, undoSnapshot].slice(-MAX_UNDO_HISTORY))
+    // Clear redo history when new action is taken
+    setRedoHistory([])
 
     if (result === "sink") {
       toast.success("Sink!", { duration: 1000 })
@@ -281,6 +336,83 @@ function App() {
       setProcessingPutt(false)
     }, 200)
   }, [session, getCurrentPosition, checkPositionComplete])
+
+  const handleUndo = useCallback(() => {
+    const currentPos = getCurrentPosition()
+    
+    if (!canUndo(undoHistory, currentPos)) {
+      return
+    }
+    
+    const lastEntry = undoHistory[undoHistory.length - 1]
+    
+    // Create current state snapshot for redo
+    const redoSnapshot = createUndoSnapshot(
+      session.currentPositionNumber - 1,
+      currentPos,
+      session.penaltyMode
+    )
+    
+    // Restore previous state
+    const updatedPositions = [...session.positions]
+    updatedPositions[lastEntry.positionIndex] = lastEntry.position
+    
+    setSession(prev => ({
+      ...prev,
+      positions: updatedPositions,
+      penaltyMode: lastEntry.penaltyMode,
+    }))
+    
+    // Update undo/redo stacks
+    setUndoHistory(prev => prev.slice(0, -1))
+    setRedoHistory(prev => [...prev, redoSnapshot])
+    
+    // Show toast with putt result
+    const lastPutt = currentPos.putts[currentPos.putts.length - 1]
+    if (lastPutt) {
+      toast.info(`Undid last ${lastPutt.result}`, { duration: 2000 })
+    } else {
+      toast.info("Undid last action", { duration: 2000 })
+    }
+  }, [session, getCurrentPosition, undoHistory])
+
+  const handleRedo = useCallback(() => {
+    if (!canRedo(redoHistory)) {
+      return
+    }
+    
+    const nextEntry = redoHistory[redoHistory.length - 1]
+    
+    // Create current state snapshot for undo
+    const currentPos = getCurrentPosition()
+    const undoSnapshot = createUndoSnapshot(
+      session.currentPositionNumber - 1,
+      currentPos,
+      session.penaltyMode
+    )
+    
+    // Restore redo state
+    const updatedPositions = [...session.positions]
+    updatedPositions[nextEntry.positionIndex] = nextEntry.position
+    
+    setSession(prev => ({
+      ...prev,
+      positions: updatedPositions,
+      penaltyMode: nextEntry.penaltyMode,
+    }))
+    
+    // Update undo/redo stacks
+    setUndoHistory(prev => [...prev, undoSnapshot])
+    setRedoHistory(prev => prev.slice(0, -1))
+    
+    // Show toast with putt result
+    const lastPutt = nextEntry.position.putts[nextEntry.position.putts.length - 1]
+    if (lastPutt) {
+      toast.info(`Redid last ${lastPutt.result}`, { duration: 2000 })
+    } else {
+      toast.info("Redid last action", { duration: 2000 })
+    }
+  }, [session, getCurrentPosition, redoHistory])
 
 
   const handleContinueWithPenalty = useCallback(() => {
@@ -309,6 +441,9 @@ function App() {
     const newSession = createNewSession()
     setSession(newSession)
     saveCurrentSession(newSession)
+    // Clear undo/redo history on restart
+    setUndoHistory([])
+    setRedoHistory([])
     toast.info("Game restarted", { duration: 1500 })
   }, [])
 
@@ -317,6 +452,9 @@ function App() {
     setSession(newSession)
     saveCurrentSession(newSession)
     setCurrentView("game")
+    // Clear undo/redo history on new game
+    setUndoHistory([])
+    setRedoHistory([])
   }, [])
 
   const handleViewHistory = useCallback(() => {
@@ -336,6 +474,9 @@ function App() {
     const newSession = createNewSession()
     setSession(newSession)
     saveCurrentSession(newSession)
+    // Clear undo/redo history on restart
+    setUndoHistory([])
+    setRedoHistory([])
     toast.info("Game restarted", { duration: 1500 })
   }, [])
 
@@ -361,6 +502,9 @@ function App() {
     const newSession = createNewSession()
     setSession(newSession)
     saveCurrentSession(newSession)
+    // Clear undo/redo history on restart
+    setUndoHistory([])
+    setRedoHistory([])
     toast.info("Game restarted", { duration: 1500 })
   }, [])
 
@@ -401,6 +545,10 @@ function App() {
           session={session}
           onRestart={handleManualRestart}
           onShowInstructions={handleShowInstructions}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          canUndo={canUndo(undoHistory, currentPosition)}
+          canRedo={canRedo(redoHistory)}
         />
 
         {/* Scrollable pyramid area with bottom padding for sticky controls */}

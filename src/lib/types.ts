@@ -25,6 +25,12 @@ export interface Position {
   completed: boolean
 }
 
+export interface UndoHistoryEntry {
+  positionIndex: number
+  position: Position
+  penaltyMode: boolean
+}
+
 export interface Session {
   sessionId: string
   startTime: number

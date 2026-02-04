@@ -1,4 +1,4 @@
-import { BASE_ATTEMPTS, Position, Session, SessionSummary } from "./types"
+import { BASE_ATTEMPTS, Position, Session, SessionSummary, UndoHistoryEntry } from "./types"
 
 export function createInitialPosition(positionNumber: number, carryover: number = 0): Position {
   const baseAttempts = BASE_ATTEMPTS[positionNumber]
@@ -91,4 +91,36 @@ export function formatDuration(minutes: number): string {
 export function formatScore(score: number): string {
   if (score > 0) return `+${score}`
   return score.toString()
+}
+
+/**
+ * Creates a snapshot of the current position state for undo history
+ */
+export function createUndoSnapshot(
+  positionIndex: number,
+  position: Position,
+  penaltyMode: boolean
+): UndoHistoryEntry {
+  return {
+    positionIndex,
+    position: JSON.parse(JSON.stringify(position)), // Deep clone
+    penaltyMode,
+  }
+}
+
+/**
+ * Checks if undo is allowed (position must not be completed)
+ */
+export function canUndo(
+  undoHistory: UndoHistoryEntry[],
+  currentPosition: Position
+): boolean {
+  return undoHistory.length > 0 && !currentPosition.completed
+}
+
+/**
+ * Checks if redo is allowed
+ */
+export function canRedo(redoHistory: UndoHistoryEntry[]): boolean {
+  return redoHistory.length > 0
 }
