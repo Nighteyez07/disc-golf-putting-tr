@@ -1,6 +1,6 @@
 import { Position, Session } from "@/lib/types"
 import { Button } from "@/components/ui/button"
-import { ArrowCounterClockwise, Book, Gear } from "@phosphor-icons/react"
+import { ArrowCounterClockwise, Info, Gear } from "@phosphor-icons/react"
 import { ThemeToggle } from "@/components/ThemeToggle"
 
 interface GameHeaderProps {
@@ -84,7 +84,7 @@ export function GameHeader({
               className="h-9 w-9"
               aria-label="View instructions"
             >
-              <Book className="h-5 w-5" />
+              <Info className="h-5 w-5" />
             </Button>
           )}
           <Button
