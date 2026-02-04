@@ -1,6 +1,6 @@
 import { Position, Session } from "@/lib/types"
 import { Button } from "@/components/ui/button"
-import { ArrowCounterClockwise, Info, Gear } from "@phosphor-icons/react"
+import { ArrowCounterClockwise, Info, Gear, ArrowUUpLeft, ArrowUUpRight } from "@phosphor-icons/react"
 import { ThemeToggle } from "@/components/ThemeToggle"
 
 interface GameHeaderProps {
@@ -13,6 +13,10 @@ interface GameHeaderProps {
   onRestart: () => void
   onShowInstructions?: () => void
   onShowSettings?: () => void
+  onUndo?: () => void
+  onRedo?: () => void
+  canUndo?: boolean
+  canRedo?: boolean
 }
 
 export function GameHeader({
@@ -24,6 +28,10 @@ export function GameHeader({
   onRestart,
   onShowInstructions,
   onShowSettings,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
 }: GameHeaderProps) {
   // Add null-safety check to prevent error when position is undefined during state transitions
   if (!position) {
@@ -85,6 +93,32 @@ export function GameHeader({
               aria-label="View instructions"
             >
               <Info className="h-5 w-5" />
+            </Button>
+          )}
+          {onUndo && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onUndo}
+              disabled={!canUndo}
+              className="h-9 w-9"
+              aria-label="Undo last putt (Ctrl+Z)"
+              title="Undo last putt (Ctrl+Z)"
+            >
+              <ArrowUUpLeft className="h-5 w-5" />
+            </Button>
+          )}
+          {onRedo && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onRedo}
+              disabled={!canRedo}
+              className="h-9 w-9"
+              aria-label="Redo last putt (Ctrl+Shift+Z)"
+              title="Redo last putt (Ctrl+Shift+Z)"
+            >
+              <ArrowUUpRight className="h-5 w-5" />
             </Button>
           )}
           <Button
