@@ -136,10 +136,12 @@ The app manages sessions through a hierarchical state model:
 
 ### Storage Strategy
 
-- **Current Session**: Stored in `localStorage` under `currentSession` key
-- **Completed Sessions**: Archived to IndexedDB `completed_sessions` store
-- **Auto-save**: Debounced save every game state change
-- **Seeding**: Demo data available via `seed-data.ts`
+- **Database**: SQLite database for persistent storage (server-side)
+- **Current Session**: Saved to backend API, loaded on app initialization
+- **Completed Sessions**: Archived to SQLite database via REST API
+- **Auto-save**: Automatic save every 10 seconds to backend
+- **Docker Volume**: Database persisted in Docker volume for data persistence across container restarts
+- **Migration**: Utility available to migrate data from legacy IndexedDB storage
 
 ## Development Tips
 
@@ -147,7 +149,7 @@ The app manages sessions through a hierarchical state model:
 
 **Game Logic Testing**: All calculations in `game-logic.ts` are pure functions with no side effects - test in isolation from UI.
 
-**Storage Debugging**: Use browser DevTools Storage tab to inspect IndexedDB and localStorage. Check React DevTools for session state in hooks.
+**Storage Architecture**: Backend API serves both the React frontend and provides RESTful endpoints for session management. Storage debugging can be done by inspecting the SQLite database file at `data/disc-golf-trainer.db` or using the API endpoints.
 
 **UI Components**: All Radix UI components are pre-built in `src/components/ui/`. Import using shadcn/ui pattern: `import { Button } from "@/components/ui/button"`
 
@@ -157,12 +159,22 @@ The app manages sessions through a hierarchical state model:
 
 - **React 18** + TypeScript for type-safe component development
 - **Vite** + @github/spark for fast build and development
+- **Express.js** for backend API server
+- **SQLite** (better-sqlite3) for persistent data storage
 - **Radix UI** + Tailwind CSS + shadcn/ui for accessible, styled components
 - **Framer Motion** for smooth animations
 - **Sonner** for toast notifications
-- **IndexedDB** for persistent session history
 - **Vitest** + React Testing Library for unit testing
 - **Playwright** for end-to-end testing
+- **Docker** + Docker Compose for containerized deployment
+
+## Deployment
+
+See [CONTAINER_DEPLOYMENT.md](./CONTAINER_DEPLOYMENT.md) for Docker deployment instructions, including:
+- Building and running the containerized application
+- SQLite database volume configuration
+- Data persistence across container restarts
+- Migration from IndexedDB to SQLite
 
 ## License
 
