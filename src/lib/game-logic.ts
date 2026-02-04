@@ -49,6 +49,13 @@ export function calculatePositionScore(position: Position, penaltyMode: boolean)
   return 0
 }
 
+export function calculateAccuracyRate(position: Position): number {
+  if (position.attemptsUsed === 0) {
+    return 0
+  }
+  return Math.round((position.puttsInSunk / position.attemptsUsed) * 100)
+}
+
 export function calculateSessionScore(session: Session): number {
   return session.positions.reduce((total, pos) => {
     if (pos.completed) {
@@ -91,6 +98,12 @@ export function formatDuration(minutes: number): string {
 export function formatScore(score: number): string {
   if (score > 0) return `+${score}`
   return score.toString()
+}
+
+export function getAccuracyColor(accuracyRate: number): string {
+  if (accuracyRate >= 75) return "text-green-600 dark:text-green-500"
+  if (accuracyRate >= 50) return "text-yellow-600 dark:text-yellow-500"
+  return "text-red-600 dark:text-red-500"
 }
 
 /**

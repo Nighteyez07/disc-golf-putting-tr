@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Session } from "@/lib/types"
-import { formatScore, formatDuration } from "@/lib/game-logic"
+import { formatScore, formatDuration, getAccuracyColor } from "@/lib/game-logic"
 import { Trophy } from "@phosphor-icons/react"
 
 interface SessionCompleteDialogProps {
@@ -34,6 +34,10 @@ export function SessionCompleteDialog({
   // Calculate total shots taken vs BASE attempts (not including carryover)
   const totalShotsTaken = session.positions.reduce((sum, pos) => sum + pos.attemptsUsed, 0)
   const totalBaseAttempts = session.positions.reduce((sum, pos) => sum + pos.baseAttemptsAllocated, 0)
+  
+  // Calculate average accuracy across all positions
+  const totalPuttsMade = session.positions.reduce((sum, pos) => sum + pos.puttsInSunk, 0)
+  const averageAccuracy = totalShotsTaken > 0 ? Math.round((totalPuttsMade / totalShotsTaken) * 100) : 0
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -90,6 +94,13 @@ export function SessionCompleteDialog({
                 {totalShotsTaken} / {totalBaseAttempts}
               </span>
             </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Average Accuracy</span>
+              <span className={`font-semibold numeric text-sm ${getAccuracyColor(averageAccuracy)}`}>
+                {averageAccuracy}%
+              </span>
+            </div>
           </div>
 
           <Separator />
@@ -98,19 +109,27 @@ export function SessionCompleteDialog({
           <div>
             <div className="text-sm font-semibold mb-2">Position Breakdown:</div>
             <div className="grid grid-cols-3 gap-2">
-              {session.positions.map((pos, i) => (
-                <div 
-                  key={i}
-                  className="text-center p-2 rounded bg-secondary"
-                >
-                  <div className="text-xs text-muted-foreground mb-1">P{pos.positionNumber}</div>
-                  <div className={`numeric text-sm font-bold ${
-                    pos.status === "continued-penalty" ? 'text-warning' : 'text-foreground'
-                  }`}>
-                    {pos.attemptsUsed}/{pos.totalAttemptsAvailable}
+              {session.positions.map((pos, i) => {
+                const accuracy = pos.accuracyRate ?? (pos.puttsInSunk > 0 && pos.attemptsUsed > 0
+                  ? Math.round((pos.puttsInSunk / pos.attemptsUsed) * 100)
+                  : 0)
+                return (
+                  <div 
+                    key={i}
+                    className="text-center p-2 rounded bg-secondary"
+                  >
+                    <div className="text-xs text-muted-foreground mb-1">P{pos.positionNumber}</div>
+                    <div className={`numeric text-sm font-bold ${
+                      pos.status === "continued-penalty" ? 'text-warning' : 'text-foreground'
+                    }`}>
+                      {pos.attemptsUsed}/{pos.totalAttemptsAvailable}
+                    </div>
+                    <div className={`text-[10px] font-semibold mt-0.5 ${getAccuracyColor(accuracy)}`}>
+                      {accuracy}%
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
