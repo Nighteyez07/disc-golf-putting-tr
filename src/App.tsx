@@ -88,37 +88,6 @@ function App() {
     return () => clearInterval(interval)
   }, [session])
 
-  // Keyboard shortcuts for undo/redo
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Check if currently in game view and not processing
-      if (currentView !== "game" || isProcessingRef.current) {
-        return
-      }
-      
-      // Ctrl+Z (Windows/Linux) or Cmd+Z (Mac) for undo
-      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
-        event.preventDefault()
-        handleUndo()
-      }
-      
-      // Ctrl+Shift+Z (Windows/Linux) or Cmd+Shift+Z (Mac) for redo
-      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && event.shiftKey) {
-        event.preventDefault()
-        handleRedo()
-      }
-      
-      // Ctrl+Y (Windows/Linux alternative for redo)
-      if (event.ctrlKey && event.key === 'y' && !event.metaKey) {
-        event.preventDefault()
-        handleRedo()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentView, handleUndo, handleRedo])
-
   const getCurrentPosition = useCallback((): Position => {
     return session.positions[session.currentPositionNumber - 1]
   }, [session])
@@ -413,6 +382,37 @@ function App() {
       toast.info("Redid last action", { duration: 2000 })
     }
   }, [session, getCurrentPosition, redoHistory])
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if currently in game view and not processing
+      if (currentView !== "game" || isProcessingRef.current) {
+        return
+      }
+      
+      // Ctrl+Z (Windows/Linux) or Cmd+Z (Mac) for undo
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+        event.preventDefault()
+        handleUndo()
+      }
+      
+      // Ctrl+Shift+Z (Windows/Linux) or Cmd+Shift+Z (Mac) for redo
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && event.shiftKey) {
+        event.preventDefault()
+        handleRedo()
+      }
+      
+      // Ctrl+Y (Windows/Linux alternative for redo)
+      if (event.ctrlKey && event.key === 'y' && !event.metaKey) {
+        event.preventDefault()
+        handleRedo()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentView, handleUndo, handleRedo])
 
 
   const handleContinueWithPenalty = useCallback(() => {

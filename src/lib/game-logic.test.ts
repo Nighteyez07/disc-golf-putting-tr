@@ -9,6 +9,9 @@ import {
   getPositionName,
   formatDuration,
   formatScore,
+  createUndoSnapshot,
+  canUndo,
+  canRedo,
 } from './game-logic'
 import { Position, Session } from './types'
 
@@ -602,5 +605,107 @@ describe('formatScore', () => {
 
   it('formats zero score', () => {
     expect(formatScore(0)).toBe('0')
+  })
+})
+
+describe('Undo/Redo functionality', () => {
+  describe('createUndoSnapshot', () => {
+    it('creates a snapshot of position state', () => {
+      const position = createInitialPosition(1, 0)
+      position.attemptsUsed = 2
+      position.puttsInSunk = 1
+      position.putts = [
+        { result: 'sink', timestamp: Date.now() },
+        { result: 'miss', timestamp: Date.now() }
+      ]
+      position.status = 'in-progress'
+      
+      const snapshot = createUndoSnapshot(0, position, false)
+      
+      expect(snapshot.positionIndex).toBe(0)
+      expect(snapshot.position.attemptsUsed).toBe(2)
+      expect(snapshot.position.puttsInSunk).toBe(1)
+      expect(snapshot.position.putts).toHaveLength(2)
+      expect(snapshot.position.status).toBe('in-progress')
+      expect(snapshot.penaltyMode).toBe(false)
+    })
+    
+    it('creates a deep copy of position', () => {
+      const position = createInitialPosition(1, 0)
+      position.putts = [{ result: 'sink', timestamp: Date.now() }]
+      
+      const snapshot = createUndoSnapshot(0, position, false)
+      
+      // Modify original position
+      position.putts.push({ result: 'miss', timestamp: Date.now() })
+      position.attemptsUsed = 5
+      
+      // Snapshot should remain unchanged
+      expect(snapshot.position.putts).toHaveLength(1)
+      expect(snapshot.position.attemptsUsed).toBe(0)
+    })
+    
+    it('captures penalty mode state', () => {
+      const position = createInitialPosition(1, 0)
+      const snapshot = createUndoSnapshot(0, position, true)
+      
+      expect(snapshot.penaltyMode).toBe(true)
+    })
+  })
+  
+  describe('canUndo', () => {
+    it('returns false when undo history is empty', () => {
+      const position = createInitialPosition(1, 0)
+      expect(canUndo([], position)).toBe(false)
+    })
+    
+    it('returns false when position is completed', () => {
+      const position = createInitialPosition(1, 0)
+      position.completed = true
+      const undoHistory = [createUndoSnapshot(0, position, false)]
+      
+      expect(canUndo(undoHistory, position)).toBe(false)
+    })
+    
+    it('returns true when undo history exists and position not completed', () => {
+      const position = createInitialPosition(1, 0)
+      const undoHistory = [createUndoSnapshot(0, position, false)]
+      
+      expect(canUndo(undoHistory, position)).toBe(true)
+    })
+    
+    it('returns true with multiple undo entries', () => {
+      const position = createInitialPosition(1, 0)
+      const undoHistory = [
+        createUndoSnapshot(0, position, false),
+        createUndoSnapshot(0, position, false),
+        createUndoSnapshot(0, position, false)
+      ]
+      
+      expect(canUndo(undoHistory, position)).toBe(true)
+    })
+  })
+  
+  describe('canRedo', () => {
+    it('returns false when redo history is empty', () => {
+      expect(canRedo([])).toBe(false)
+    })
+    
+    it('returns true when redo history has entries', () => {
+      const position = createInitialPosition(1, 0)
+      const redoHistory = [createUndoSnapshot(0, position, false)]
+      
+      expect(canRedo(redoHistory)).toBe(true)
+    })
+    
+    it('returns true with multiple redo entries', () => {
+      const position = createInitialPosition(1, 0)
+      const redoHistory = [
+        createUndoSnapshot(0, position, false),
+        createUndoSnapshot(0, position, false)
+      ]
+      
+      expect(canRedo(redoHistory)).toBe(true)
+    })
   })
 })
