@@ -141,7 +141,7 @@ export function SessionHistory({ onNewRound }: SessionHistoryProps) {
                           <div className="text-sm font-semibold mb-2">Detailed Breakdown</div>
                           <div className="space-y-2">
                             {session.positions.map((pos) => {
-                              const accuracy = pos.puttsInSunk > 0 
+                              const accuracy = pos.puttsInSunk > 0 && pos.attemptsUsed > 0
                                 ? Math.round((pos.puttsInSunk / pos.attemptsUsed) * 100)
                                 : 0
                               const isPenalty = pos.status === "continued-penalty"
