@@ -149,9 +149,14 @@ app.post('/api/migrate/import', (req, res) => {
 const distPath = path.join(__dirname, '..', 'dist')
 app.use(express.static(distPath))
 
-// All other routes serve the React app
-app.get('*', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'))
+// All other non-API routes serve the React app (SPA fallback)
+app.use((req, res, next) => {
+  // Only serve index.html for non-API routes
+  if (!req.path.startsWith('/api') && !req.path.startsWith('/health')) {
+    res.sendFile(path.join(distPath, 'index.html'))
+  } else {
+    next()
+  }
 })
 
 app.listen(PORT, () => {

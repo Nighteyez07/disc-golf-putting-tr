@@ -7,6 +7,8 @@
     "lib": ["ES2022"],
     "outDir": "./dist-server",
     "rootDir": "./server",
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
