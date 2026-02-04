@@ -404,7 +404,7 @@ function App() {
       }
       
       // Ctrl+Y (Windows/Linux alternative for redo)
-      if (event.ctrlKey && event.key === 'y' && !event.metaKey) {
+      if (event.ctrlKey && event.key === 'y' && !event.shiftKey) {
         event.preventDefault()
         handleRedo()
       }

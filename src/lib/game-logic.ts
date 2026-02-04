@@ -103,7 +103,7 @@ export function createUndoSnapshot(
 ): UndoHistoryEntry {
   return {
     positionIndex,
-    position: JSON.parse(JSON.stringify(position)), // Deep clone
+    position: structuredClone(position), // Deep clone using native API
     penaltyMode,
   }
 }
