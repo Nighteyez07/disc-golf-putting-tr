@@ -1,7 +1,14 @@
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 
 WORKDIR /app
+
+# Install build dependencies for better-sqlite3
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package.json package-lock.json ./
@@ -16,24 +23,33 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Serve
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /app
 
-# Copy package files and install only production dependencies
+# Install build dependencies for better-sqlite3
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package files
 COPY package.json package-lock.json ./
-RUN npm ci --only=production
+
+# Install ALL dependencies (simpler, works better)
+RUN npm ci
 
 # Copy built assets from builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/dist-server ./dist-server
 
 # Create data directory for SQLite database
-RUN mkdir -p /app/data && chown -R 1001:1001 /app/data
+RUN mkdir -p /app/data
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001 && \
+# Create non-root user for security (Debian commands)
+RUN groupadd --gid 1001 nodejs && \
+    useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nextjs && \
     chown -R nextjs:nodejs /app
 
 USER nextjs
