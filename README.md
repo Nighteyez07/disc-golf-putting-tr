@@ -10,6 +10,8 @@ A mobile-optimized web app for structured disc golf putting practice. Track your
 
 **Penalty Scoring Mode** - Choice to continue after exhausting attempts with -1 point per additional putt, allowing session persistence with competitive scoring pressure.
 
+**Haptic Feedback** - Tactile vibration feedback on mobile devices when recording putts (Android Chrome/Firefox). Different vibration patterns for sinks, misses, and penalty mode activation. Configurable in settings. See [HAPTIC_COMPATIBILITY.md](./HAPTIC_COMPATIBILITY.md) for browser support details.
+
 **Session Persistence** - Auto-saves every 10 seconds to localStorage; completed sessions archive to IndexedDB with full scoring breakdown and history viewing.
 
 **Real-Time Tracking** - Live header display showing current position, cumulative score, and attempt breakdown updated with every putt.
@@ -111,6 +113,7 @@ src/
 │   ├── types.ts           # Core data structures (Session, Position, Putt)
 │   ├── game-logic.ts      # Pure game rule calculations
 │   ├── storage.ts         # IndexedDB and localStorage operations
+│   ├── haptics.ts         # Haptic feedback utilities (Vibration API)
 │   └── seed-data.ts       # Demo session data
 └── styles/                # Tailwind CSS theme
 ```

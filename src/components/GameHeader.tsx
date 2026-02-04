@@ -1,6 +1,6 @@
 import { Position, Session } from "@/lib/types"
 import { Button } from "@/components/ui/button"
-import { ArrowCounterClockwise, Info, ArrowUUpLeft, ArrowUUpRight } from "@phosphor-icons/react"
+import { ArrowCounterClockwise, Info, Gear, ArrowUUpLeft, ArrowUUpRight } from "@phosphor-icons/react"
 import { ThemeToggle } from "@/components/ThemeToggle"
 
 interface GameHeaderProps {
@@ -12,6 +12,7 @@ interface GameHeaderProps {
   session: Session
   onRestart: () => void
   onShowInstructions?: () => void
+  onShowSettings?: () => void
   onUndo?: () => void
   onRedo?: () => void
   canUndo?: boolean
@@ -26,6 +27,7 @@ export function GameHeader({
   session,
   onRestart,
   onShowInstructions,
+  onShowSettings,
   onUndo,
   onRedo,
   canUndo = false,
@@ -71,6 +73,17 @@ export function GameHeader({
             {totalShotsTaken}/{totalAttemptsAvailable}
           </div>
           <ThemeToggle />
+          {onShowSettings && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onShowSettings}
+              className="h-9 w-9"
+              aria-label="Settings"
+            >
+              <Gear className="h-5 w-5" />
+            </Button>
+          )}
           {onShowInstructions && (
             <Button
               variant="ghost"

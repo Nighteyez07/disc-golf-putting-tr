@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { CheckCircle, XCircle, CircleNotch } from "@phosphor-icons/react"
+import { haptics } from "@/lib/haptics"
 
 interface GameControlsProps {
   onRecordSink: () => void
@@ -17,6 +18,16 @@ export function GameControls({
   // Buttons should be disabled if either processing a putt or session is complete
   const isDisabled = disabled || sessionComplete
   
+  const handleSink = () => {
+    haptics.sink()
+    onRecordSink()
+  }
+  
+  const handleMiss = () => {
+    haptics.miss()
+    onRecordMiss()
+  }
+  
   return (
     <div className="bg-card px-5 py-6">
       {sessionComplete && (
@@ -26,7 +37,7 @@ export function GameControls({
       )}
       <div className="flex gap-3">
         <Button
-          onClick={onRecordSink}
+          onClick={handleSink}
           disabled={isDisabled}
           className="flex-1 h-14 text-lg font-semibold bg-accent hover:bg-accent/90 text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -43,7 +54,7 @@ export function GameControls({
           )}
         </Button>
         <Button
-          onClick={onRecordMiss}
+          onClick={handleMiss}
           disabled={isDisabled}
           variant="outline"
           className="flex-1 h-14 text-lg font-semibold border-2 disabled:opacity-50 disabled:cursor-not-allowed"

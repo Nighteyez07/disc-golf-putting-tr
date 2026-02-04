@@ -17,6 +17,7 @@ import {
   archiveSession,
   initDB,
 } from "./lib/storage"
+import { haptics } from "./lib/haptics"
 import { GameHeader } from "./components/GameHeader"
 import { PositionTriangle } from "./components/PositionTriangle"
 import { PuttStatus } from "./components/PuttStatus"
@@ -26,6 +27,7 @@ import { SessionComplete } from "./components/SessionComplete"
 import { SessionHistory } from "./components/SessionHistory"
 import { InstructionsDialog } from "./components/InstructionsDialog"
 import { SessionCompleteDialog } from "./components/SessionCompleteDialog"
+import { SettingsDialog } from "./components/SettingsDialog"
 import { Toaster, toast } from "sonner"
 import { motion } from "framer-motion"
 
@@ -39,9 +41,10 @@ function App() {
   const [session, setSession] = useState<Session>(createNewSession())
   const [showRestartDialog, setShowRestartDialog] = useState(false)
   const [showManualRestartDialog, setShowManualRestartDialog] = useState(false)
-  const [currentView, setCurrentView] = useState<AppView>("game")
+  const [currentView, setCurrentView] = useState<AppView>("history")
   const [processingPutt, setProcessingPutt] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [showCompletionPopup, setShowCompletionPopup] = useState(false)
   
   // Undo/Redo state
@@ -66,6 +69,11 @@ function App() {
       const savedSession = loadCurrentSession()
       if (savedSession && !savedSession.endTime) {
         setSession(savedSession)
+        // If there's an active session, navigate to game view
+        setCurrentView("game")
+      } else {
+        // Otherwise stay on history view (default)
+        setCurrentView("history")
       }
 
       // Check if user has seen instructions before
@@ -418,6 +426,9 @@ function App() {
   const handleContinueWithPenalty = useCallback(() => {
     setShowRestartDialog(false)
     
+    // Trigger penalty haptic feedback
+    haptics.penalty()
+    
     const currentPos = getCurrentPosition()
     const updatedPosition: Position = {
       ...currentPos,
@@ -461,10 +472,6 @@ function App() {
     setCurrentView("history")
   }, [])
 
-  const handleBackToGame = useCallback(() => {
-    setCurrentView("game")
-  }, [])
-
   const handleManualRestart = useCallback(() => {
     setShowManualRestartDialog(true)
   }, [])
@@ -493,8 +500,17 @@ function App() {
     setShowInstructions(false)
   }, [])
 
+  const handleShowSettings = useCallback(() => {
+    setShowSettings(true)
+  }, [])
+
+  const handleCloseSettings = useCallback(() => {
+    setShowSettings(false)
+  }, [])
+
   const handleCloseCompletionPopup = useCallback(() => {
     setShowCompletionPopup(false)
+    setCurrentView("history")
   }, [])
 
   const handleRestartFromCompletion = useCallback(() => {
@@ -502,6 +518,7 @@ function App() {
     const newSession = createNewSession()
     setSession(newSession)
     saveCurrentSession(newSession)
+    setCurrentView("game")
     // Clear undo/redo history on restart
     setUndoHistory([])
     setRedoHistory([])
@@ -511,8 +528,12 @@ function App() {
   if (currentView === "history") {
     return (
       <>
-        <SessionHistory onBack={handleBackToGame} />
+        <SessionHistory onNewRound={handleNewGame} />
         <Toaster position="top-center" />
+        <InstructionsDialog
+          open={showInstructions}
+          onClose={handleCloseInstructions}
+        />
       </>
     )
   }
@@ -545,6 +566,7 @@ function App() {
           session={session}
           onRestart={handleManualRestart}
           onShowInstructions={handleShowInstructions}
+          onShowSettings={handleShowSettings}
           onUndo={handleUndo}
           onRedo={handleRedo}
           canUndo={canUndo(undoHistory, currentPosition)}
@@ -599,6 +621,11 @@ function App() {
       <InstructionsDialog
         open={showInstructions}
         onClose={handleCloseInstructions}
+      />
+
+      <SettingsDialog
+        open={showSettings}
+        onClose={handleCloseSettings}
       />
 
       <SessionCompleteDialog
