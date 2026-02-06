@@ -1,5 +1,43 @@
 import db from './db.js'
 
+// Database row interfaces
+interface SessionRow {
+  session_id: string
+  start_time: number
+  end_time: number | null
+  penalty_mode: number
+  current_position_number: number
+  final_score: number | null
+  session_summary: string | null
+  created_at: number
+}
+
+interface PositionRow {
+  id: number
+  session_id: string
+  position_number: number
+  base_attempts_allocated: number
+  attempts_carried_over: number
+  total_attempts_available: number
+  attempts_used: number
+  putts_in_sunk: number
+  position_score: number
+  status: string
+  completed: number
+}
+
+interface PuttRow {
+  id: number
+  session_id: string
+  position_number: number
+  result: 'sink' | 'miss'
+  timestamp: number
+}
+
+interface SessionIdRow {
+  session_id: string
+}
+
 export interface Session {
   sessionId: string
   startTime: number
@@ -109,7 +147,7 @@ export function loadCurrentSession(): Session | null {
     WHERE end_time IS NULL 
     ORDER BY start_time DESC 
     LIMIT 1
-  `).get() as any
+  `).get() as SessionRow | undefined
 
   if (!sessionRow) {
     return null
@@ -122,7 +160,7 @@ export function loadCurrentSession(): Session | null {
 export function getSessionById(sessionId: string): Session | null {
   const sessionRow = db.prepare(`
     SELECT * FROM sessions WHERE session_id = ?
-  `).get(sessionId) as any
+  `).get(sessionId) as SessionRow | undefined
 
   if (!sessionRow) {
     return null
@@ -152,7 +190,7 @@ export function getSessionHistory(limit = 50): Session[] {
     WHERE end_time IS NOT NULL 
     ORDER BY start_time DESC 
     LIMIT ?
-  `).all(limit) as any[]
+  `).all(limit) as SessionRow[]
 
   return sessionRows.map(row => reconstructSession(row))
 }
@@ -164,7 +202,7 @@ export function deleteOldestSessions(count: number): void {
     WHERE end_time IS NOT NULL 
     ORDER BY start_time ASC 
     LIMIT ?
-  `).all(count) as any[]
+  `).all(count) as SessionIdRow[]
 
   const deleteStmt = db.prepare('DELETE FROM sessions WHERE session_id = ?')
   for (const session of oldestSessions) {
@@ -173,19 +211,19 @@ export function deleteOldestSessions(count: number): void {
 }
 
 // Helper function to reconstruct a full session from database rows
-function reconstructSession(sessionRow: any): Session {
+function reconstructSession(sessionRow: SessionRow): Session {
   const positions = db.prepare(`
     SELECT * FROM positions 
     WHERE session_id = ? 
     ORDER BY position_number ASC
-  `).all(sessionRow.session_id) as any[]
+  `).all(sessionRow.session_id) as PositionRow[]
 
   const reconstructedPositions: Position[] = positions.map(posRow => {
     const putts = db.prepare(`
       SELECT result, timestamp FROM putts 
       WHERE session_id = ? AND position_number = ?
       ORDER BY timestamp ASC
-    `).all(sessionRow.session_id, posRow.position_number) as any[]
+    `).all(sessionRow.session_id, posRow.position_number) as PuttRow[]
 
     return {
       positionNumber: posRow.position_number,

@@ -1,9 +1,8 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   initDB,
   saveCurrentSession,
   loadCurrentSession,
-  clearCurrentSession,
   archiveSession,
   loadCurrentSessionAsync,
   clearCurrentSessionAsync,
@@ -14,7 +13,7 @@ import { createNewSession } from './game-logic'
 
 // Mock fetch globally
 const mockFetch = vi.fn()
-global.fetch = mockFetch as any
+global.fetch = mockFetch as unknown as typeof fetch
 
 describe('initDB', () => {
   beforeEach(() => {

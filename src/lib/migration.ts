@@ -1,7 +1,10 @@
 // Migration utility to export IndexedDB data for import to SQLite backend
 // This file can be run in the browser console on the old version
 
-export async function exportIndexedDBData(): Promise<any> {
+// Type for unknown session data from IndexedDB
+type UnknownSession = Record<string, unknown>
+
+export async function exportIndexedDBData(): Promise<UnknownSession[]> {
   const DB_NAME = "DiscPuttingGameDB"
   const STORE_NAME = "sessions"
   const DB_VERSION = 1
@@ -17,7 +20,7 @@ export async function exportIndexedDBData(): Promise<any> {
       const getAllRequest = store.getAll()
 
       getAllRequest.onsuccess = () => {
-        const sessions = getAllRequest.result
+        const sessions = getAllRequest.result as UnknownSession[]
         console.log('Exported sessions:', sessions)
         resolve(sessions)
       }
@@ -27,7 +30,7 @@ export async function exportIndexedDBData(): Promise<any> {
   })
 }
 
-export async function importToBackend(sessions: any[]): Promise<void> {
+export async function importToBackend(sessions: UnknownSession[]): Promise<void> {
   const API_URL = '/api/migrate/import'
   
   try {
@@ -51,7 +54,7 @@ export async function importToBackend(sessions: any[]): Promise<void> {
 }
 
 // Helper function to download exported data as JSON file
-export function downloadAsJson(data: any, filename: string = 'sessions-export.json'): void {
+export function downloadAsJson(data: unknown, filename: string = 'sessions-export.json'): void {
   const dataStr = JSON.stringify(data, null, 2)
   const dataBlob = new Blob([dataStr], { type: 'application/json' })
   const url = URL.createObjectURL(dataBlob)
