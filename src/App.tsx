@@ -13,7 +13,6 @@ import {
 } from "./lib/game-logic"
 import { 
   saveCurrentSession, 
-  loadCurrentSession, 
   clearCurrentSession,
   archiveSession,
   initDB,
@@ -67,7 +66,8 @@ function App() {
         localStorage.setItem("history_seeded", "true")
       }
       
-      const savedSession = loadCurrentSession()
+      const { loadCurrentSessionAsync } = await import("./lib/storage")
+      const savedSession = await loadCurrentSessionAsync()
       if (savedSession && !savedSession.endTime) {
         setSession(savedSession)
         // If there's an active session, navigate to game view

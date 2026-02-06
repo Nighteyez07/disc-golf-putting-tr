@@ -1,40 +1,31 @@
 import { Session } from "./types"
 
-const CURRENT_SESSION_KEY = "current_session"
-const DB_NAME = "DiscPuttingGameDB"
-const STORE_NAME = "sessions"
-const DB_VERSION = 1
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
-let dbInstance: IDBDatabase | null = null
-
-export function initDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    if (dbInstance) {
-      resolve(dbInstance)
-      return
+// Initialize DB - now just a health check for the backend
+export async function initDB(): Promise<void> {
+  try {
+    const response = await fetch('/health')
+    if (!response.ok) {
+      throw new Error('Backend health check failed')
     }
-
-    const request = indexedDB.open(DB_NAME, DB_VERSION)
-
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => {
-      dbInstance = request.result
-      resolve(dbInstance)
-    }
-
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: "sessionId" })
-        objectStore.createIndex("timestamp", "timestamp", { unique: false })
-      }
-    }
-  })
+    console.log('Backend API is available')
+  } catch (error) {
+    console.error('Failed to connect to backend:', error)
+    // Don't throw - allow app to start even if backend is temporarily unavailable
+  }
 }
 
 export function saveCurrentSession(session: Session): void {
   try {
-    localStorage.setItem(CURRENT_SESSION_KEY, JSON.stringify(session))
+    // Save to API
+    fetch(`${API_BASE_URL}/session/current`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(session)
+    }).catch(error => {
+      console.error('Failed to save session to backend:', error)
+    })
   } catch (error) {
     console.error("Failed to save current session:", error)
   }
@@ -42,9 +33,23 @@ export function saveCurrentSession(session: Session): void {
 
 export function loadCurrentSession(): Session | null {
   try {
-    const stored = localStorage.getItem(CURRENT_SESSION_KEY)
-    if (!stored) return null
-    return JSON.parse(stored) as Session
+    // For now, we can't use async in this function without breaking the app
+    // So we'll return null and let the app fetch from the backend on init
+    // This is handled in App.tsx useEffect
+    return null
+  } catch (error) {
+    console.error("Failed to load current session:", error)
+    return null
+  }
+}
+
+export async function loadCurrentSessionAsync(): Promise<Session | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/session/current`)
+    if (!response.ok) {
+      return null
+    }
+    return await response.json()
   } catch (error) {
     console.error("Failed to load current session:", error)
     return null
@@ -53,7 +58,20 @@ export function loadCurrentSession(): Session | null {
 
 export function clearCurrentSession(): void {
   try {
-    localStorage.removeItem(CURRENT_SESSION_KEY)
+    // Note: We need the sessionId to clear properly
+    // This will be handled by the app passing it explicitly
+  } catch (error) {
+    console.error("Failed to clear current session:", error)
+  }
+}
+
+export async function clearCurrentSessionAsync(sessionId: string): Promise<void> {
+  try {
+    await fetch(`${API_BASE_URL}/session/current`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId })
+    })
   } catch (error) {
     console.error("Failed to clear current session:", error)
   }
@@ -61,65 +79,28 @@ export function clearCurrentSession(): void {
 
 export async function archiveSession(session: Session): Promise<void> {
   try {
-    const db = await initDB()
-    const transaction = db.transaction([STORE_NAME], "readwrite")
-    const store = transaction.objectStore(STORE_NAME)
-    
-    const sessionData = {
-      sessionId: session.sessionId,
-      startTime: session.startTime,
-      endTime: session.endTime,
-      finalScore: session.finalScore,
-      penaltyMode: session.penaltyMode,
-      sessionSummary: session.sessionSummary,
-      positionScores: session.positions.map(p => p.positionScore),
-      timestamp: session.startTime, // Add timestamp for index
-      positions: session.positions.map(p => ({
-        positionNumber: p.positionNumber,
-        baseAttemptsAllocated: p.baseAttemptsAllocated,
-        attemptsCarriedOver: p.attemptsCarriedOver,
-        totalAttemptsAvailable: p.totalAttemptsAvailable,
-        attemptsUsed: p.attemptsUsed,
-        puttsInSunk: p.puttsInSunk,
-        positionScore: p.positionScore,
-        status: p.status,
-      })),
-    }
-    
-    store.put(sessionData)
-    
-    return new Promise((resolve, reject) => {
-      transaction.oncomplete = () => resolve()
-      transaction.onerror = () => reject(transaction.error)
+    const response = await fetch(`${API_BASE_URL}/session/archive`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(session)
     })
+    
+    if (!response.ok) {
+      throw new Error('Failed to archive session')
+    }
   } catch (error) {
     console.error("Failed to archive session:", error)
+    throw error
   }
 }
 
 export async function getSessionHistory(): Promise<Session[]> {
   try {
-    const db = await initDB()
-    const transaction = db.transaction([STORE_NAME], "readonly")
-    const store = transaction.objectStore(STORE_NAME)
-    const index = store.index("timestamp")
-    
-    return new Promise((resolve, reject) => {
-      const request = index.openCursor(null, "prev")
-      const results: Session[] = []
-      
-      request.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest).result
-        if (cursor) {
-          results.push(cursor.value)
-          cursor.continue()
-        } else {
-          resolve(results)
-        }
-      }
-      
-      request.onerror = () => reject(request.error)
-    })
+    const response = await fetch(`${API_BASE_URL}/session/history`)
+    if (!response.ok) {
+      return []
+    }
+    return await response.json()
   } catch (error) {
     console.error("Failed to load session history:", error)
     return []
@@ -128,22 +109,15 @@ export async function getSessionHistory(): Promise<Session[]> {
 
 export async function deleteOldestSessions(count: number): Promise<void> {
   try {
-    const db = await initDB()
-    const sessions = await getSessionHistory()
-    const oldestSessions = sessions.slice(-count)
-    
-    const transaction = db.transaction([STORE_NAME], "readwrite")
-    const store = transaction.objectStore(STORE_NAME)
-    
-    for (const session of oldestSessions) {
-      store.delete(session.sessionId)
-    }
-    
-    return new Promise((resolve, reject) => {
-      transaction.oncomplete = () => resolve()
-      transaction.onerror = () => reject(transaction.error)
+    const response = await fetch(`${API_BASE_URL}/session/oldest/${count}`, {
+      method: 'DELETE'
     })
+    
+    if (!response.ok) {
+      throw new Error('Failed to delete oldest sessions')
+    }
   } catch (error) {
     console.error("Failed to delete old sessions:", error)
+    throw error
   }
 }
